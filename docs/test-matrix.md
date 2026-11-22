@@ -11,11 +11,11 @@
 | EDK2 UEFI Shell | **PASS** | Shell appeared after splash |
 | EDK2 graphical setup (LVGL + NEC OEM GOP) | **PASS** | Graphical Firmware Setup photographed on the test board |
 | USB boot into Ubuntu Live | **PASS** | Booted a USB stick after the USB and PCIe bring-up changes. Per-port SuperSpeed operation remains to be verified. |
-| USB HID in Linux | Detected | Two devices on USB bus 1. EDK2 keyboard input and per-port SuperSpeed remain untested. |
+| USB on all five physical ports | **PASS** | The tester confirmed working USB on all five ports. Negotiated SuperSpeed rates were not recorded per port. |
 | Internal NVMe detection and Linux boot with HAP | **PASS** | Kingston NV2 `2646:501d` at `03:00.0` behind `00:1c.4`. Linux 7.0.0-44 mounted its ext4 root on `nvme0n1p2` and remounted it read/write. |
 | External HDMI/VGA video with OEM GOP | NOT TESTED | No independently confirmed result |
 | UEFI Secure Boot and Ubuntu NVMe boot | **PASS** | `mokutil --sb-state` reported enabled. The kernel confirmed EFI Secure Boot lockdown. Ubuntu booted via `shimx64.efi` with `/` on `nvme0n1p2`. |
-| SD card | **PASS (mount)** | O2Micro `1217:8621` with `sdhci-pci` detected and mounted a 945 MiB FAT card. Linux flagged an unclean filesystem. Write testing is pending. |
+| SD card | **PASS** | The tester confirmed operation. The test log also shows a mounted FAT card. Write and read-back were not separately recorded. |
 | CardBus socket | Initialized | O2Micro `1217:8134` bound to `yenta_cardbus`. Card insertion and operation remain untested. |
 | SATA | Controller detected | AHCI bound and reported three implemented ports. No SATA drive was verified. |
 | Audio and Ethernet | Drivers bound | `snd_hda_intel` and `e1000e`. Playback and Ethernet traffic remain untested. |
