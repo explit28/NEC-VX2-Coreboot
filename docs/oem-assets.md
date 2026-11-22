@@ -8,8 +8,8 @@ All paths are relative to the coreboot source root. The files under `3rdparty/bl
 
 | File | Configuration | Source and purpose |
 | --- | --- | --- |
-| `3rdparty/blobs/mainboard/nec/vx-2/descriptor.bin` | `CONFIG_HAVE_IFD_BIN=y` | Intel Flash Descriptor region from the NEC's original SPI dump. Defines the flash region layout. |
-| `3rdparty/blobs/mainboard/nec/vx-2/me.bin` | `CONFIG_HAVE_ME_BIN=y` | Intel Management Engine region from the original NEC SPI dump. The captured build configuration has `CONFIG_USE_ME_CLEANER` disabled. |
+| `3rdparty/blobs/mainboard/nec/vx-2/descriptor_testmb.bin` | `CONFIG_HAVE_IFD_BIN=y` | Intel Flash Descriptor region extracted from the working 16 MiB `nec-vx2-oem-gop-test12.rom` on the test board. Defines the flash region layout. |
+| `3rdparty/blobs/mainboard/nec/vx-2/me_testmb.bin` | `CONFIG_HAVE_ME_BIN=y` | Intel Management Engine region extracted from the same working test-board ROM. The captured build configuration has `CONFIG_USE_ME_CLEANER` disabled. |
 | `3rdparty/blobs/mainboard/nec/vx-2/gbe.bin` | `CONFIG_HAVE_GBE_BIN=y` | Intel Gigabit Ethernet region from the original NEC SPI dump. Preserve the target machine's own region, which can contain its MAC address. |
 | `ExPLIT/pci8086,5917.rom` | `CONFIG_VGA_BIOS=y` | Intel legacy VGA option ROM used as a build input by the captured configuration (PCI ID `8086:5917`). |
 | `ExPLIT/NEC-GOP/IntelGopDriver.efi` | `CONFIG_EDK2_GOP_DRIVER=y` | NEC OEM Intel GOP DXE driver for EDK2, 69,568 bytes. |
@@ -17,7 +17,7 @@ All paths are relative to the coreboot source root. The files under `3rdparty/bl
 
 `CONFIG_VGA_BIOS=y` includes the legacy option ROM in the build, while `CONFIG_VGA_ROM_RUN` is disabled for coreboot. The visible splash was observed with NEC GOP in EDK2. A build with the legacy VGA ROM omitted has not been tested.
 
-Keep the original SPI dump private and use the target machine's dump as the source for the descriptor, ME and GbE regions. The exact hashes of those three inputs were not captured in the source snapshot.
+Keep SPI dumps private. For a different machine, retain its own firmware backups and verify the descriptor layout and ME/GbE inputs before building. The exact hashes of those three inputs were not captured in the source snapshot.
 
 ## Binary dependencies supplied by coreboot submodules
 
