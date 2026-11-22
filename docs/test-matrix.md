@@ -15,7 +15,7 @@
 | Internal NVMe detection and Linux boot with HAP | **PASS** | Kingston NV2 `2646:501d` at `03:00.0` behind `00:1c.4`. Linux 7.0.0-44 mounted its ext4 root on `nvme0n1p2` and remounted it read/write. |
 | External HDMI/VGA video with OEM GOP | NOT TESTED | No independently confirmed result |
 | UEFI Secure Boot and Ubuntu NVMe boot | **PASS** | `mokutil --sb-state` reported enabled. The kernel confirmed EFI Secure Boot lockdown. Ubuntu booted via `shimx64.efi` with `/` on `nvme0n1p2`. |
-| SD card | **PASS** | The tester confirmed operation. The test log also shows a mounted FAT card. Write and read-back were not separately recorded. |
+| SD card | **PASS** | The tester confirmed that the card reader works and the SD write test passed. The test log shows a mounted FAT card. Read-back after reinsertion was not separately reported. |
 | CardBus socket | Initialized | O2Micro `1217:8134` bound to `yenta_cardbus`. Card insertion and operation remain untested. |
 | SATA | Controller detected | AHCI bound and reported three implemented ports. No SATA drive was verified. |
 | Audio and Ethernet | Drivers bound | `snd_hda_intel` and `e1000e`. Playback and Ethernet traffic remain untested. |
