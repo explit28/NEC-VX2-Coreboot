@@ -28,8 +28,8 @@ CONFIG_INTEL_GMA_ADD_VBT=y
 CONFIG_EDK2_REPO_MRCHROMEBOX=y
 CONFIG_EDK2_GOP_DRIVER=y
 CONFIG_EDK2_USE_LVGL_RENDERER=y
-CONFIG_EDK2_GOP_FILE="ExPLIT/NEC-GOP/IntelGopDriver.efi"
-CONFIG_INTEL_GMA_VBT_FILE="3rdparty/blobs/mainboard/nec/vx-2/vbt.bin"
+CONFIG_EDK2_GOP_FILE="3rdparty/blobs/mainboard/nec/vx-2/IntelGopDriver.efi"
+CONFIG_INTEL_GMA_VBT_FILE="3rdparty/blobs/mainboard/nec/vx-2/IntelGopVbt.bin"
 CONFIG_EDK2_BOOTSPLASH_FILE="Documentation/coreboot_logo.bmp"
 ```
 
