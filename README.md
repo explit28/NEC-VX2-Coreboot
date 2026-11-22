@@ -1,6 +1,6 @@
 # NEC VersaPro VX-2 — coreboot + EDK2 (experimental port)
 
-**Status (2026-11-22): graphical EDK2 setup, USB live boot, and boot from internal NVMe confirmed on hardware.** The NVMe boot was verified with the full original ME firmware and HAP enabled in the flash descriptor. See the [test matrix](docs/test-matrix.md) for the tested variant and remaining checks.
+**Status (2026-11-23): graphical EDK II setup, USB live boot, and Ubuntu boot from internal NVMe with UEFI Secure Boot confirmed on hardware.** The tested ROM used full original ME firmware and HAP in the flash descriptor. The built-in SD reader also mounted a FAT card. See the [test matrix](docs/test-matrix.md) for verified results and open checks.
 
 > Experimental, unofficial port. Keep a verified backup of the original SPI flash and a known-recoverable external programmer setup. Do not flash another device's complete image. The bundled snapshot is not necessarily ready to flash without integrating its board-specific configuration and required OEM components.
 
@@ -17,7 +17,7 @@
 
 The NEC OEM GOP also renders the LVGL setup menu. A subsequent build booted Ubuntu Live from USB after the USB and PCIe bring-up changes. Per-port SuperSpeed and pre-boot external keyboard input still need testing.
 
-The reference configuration enables LVGL and uses the test-board descriptor and ME inputs with the original 16 MiB SPI layout and 8 MiB BIOS region. It records the earlier baseline with build-time ME cleaning disabled. The later HAP test used a separate descriptor; see the test matrix. The exact local configuration of the photographed build has not been captured. (If desired, pass `KERNELVERSION=26.09` to `make` to set the displayed version.)
+The reference configuration enables LVGL and uses the original 16 MiB SPI layout with an 8 MiB BIOS region. It incorporates the verified HAP descriptor path, full ME input, SMMSTORE, and EDK II Secure Boot support. Secure Boot starts disabled by default and can be enabled in setup. The reference was updated from confirmed settings in the test build. A fresh full `.config` export of that build is still pending.
 
 The following combination was confirmed to show the **coreboot logo through EDK2**, followed by a functional UEFI Shell:
 
@@ -75,4 +75,4 @@ See [Development notes](docs/development-notes.md), [Test matrix](docs/test-matr
 
 Documentation and original repository helper scripts can be released under a permissive license by the author. Coreboot, EDK2, libgfxinit and OEM components retain their respective licenses. This project is **not affiliated with NEC, Intel, Coreboot or MrChromebox**. Do not assume license rights to redistribute extracted OEM firmware.
 
-The captured config selects EDK2 ref `26.09.1` and configures memory-mapped TPM 2.0. TPM operation under coreboot is pending hardware validation. The board directory was untracked in the source checkout. Other local changes and exact submodule revisions were not captured. This archive has not been independently rebuilt.
+The captured config selects EDK2 ref `26.09.1` and configures memory-mapped TPM 2.0. The latest log exposes the ACPI TPM2 table, but TPM availability in Linux remains open. The board directory was untracked in the source checkout. Other local changes and exact submodule revisions were not captured. This archive has not been independently rebuilt.
