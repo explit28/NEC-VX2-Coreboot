@@ -1,6 +1,6 @@
 # NEC VersaPro VX-2 — coreboot + EDK2 (experimental port)
 
-**Status (2026-11-22): first confirmed graphical UEFI boot.** The NEC VersaPro VX-2 successfully displays the coreboot logo via the **original NEC Intel GOP DXE driver** running in MrChromebox EDK2, then enters the UEFI Shell. No SSD was installed at this test, so storage detection and OS boot remain **untested**.
+**Status (2026-11-22): graphical EDK2 setup confirmed on hardware.** The NEC VersaPro VX-2 successfully displays the coreboot logo via the **original NEC Intel GOP DXE driver** running in MrChromebox EDK2, then enters the UEFI Shell. No SSD was installed at this test, so storage detection and OS boot remain **untested**.
 
 > Experimental, unofficial port. Keep a verified backup of the original SPI flash and a known-recoverable external programmer setup. Do not flash another device's complete image. The bundled snapshot is not necessarily ready to flash without integrating its board-specific configuration and required OEM components.
 
@@ -15,6 +15,10 @@
 
 ## Milestone: graphical UEFI output
 
+The NEC OEM GOP also renders the LVGL setup menu. USB boot devices did not appear in the boot menu during the latest test. USB enumeration and external keyboard input still need testing.
+
+The reference configuration enables LVGL and uses the test-board descriptor and ME inputs with the original 16 MiB SPI layout and 8 MiB BIOS region. It uses the working baseline with build-time ME cleaning disabled. The exact local configuration of the photographed build has not been captured. (If desired, pass `KERNELVERSION=26.09` to `make` to set the displayed version.)
+
 The following combination was confirmed to show the **coreboot logo through EDK2**, followed by a functional UEFI Shell:
 
 ```text
@@ -23,6 +27,7 @@ CONFIG_NO_GFX_INIT=y
 CONFIG_INTEL_GMA_ADD_VBT=y
 CONFIG_EDK2_REPO_MRCHROMEBOX=y
 CONFIG_EDK2_GOP_DRIVER=y
+CONFIG_EDK2_USE_LVGL_RENDERER=y
 CONFIG_EDK2_GOP_FILE="ExPLIT/NEC-GOP/IntelGopDriver.efi"
 CONFIG_INTEL_GMA_VBT_FILE="3rdparty/blobs/mainboard/nec/vx-2/vbt.bin"
 CONFIG_EDK2_BOOTSPLASH_FILE="Documentation/coreboot_logo.bmp"
