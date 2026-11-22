@@ -1,0 +1,4 @@
+## SPDX-License-Identifier: GPL-2.0-only
+
+config BOARD_NEC_VERSAPRO_VX2
+	bool "VersaPro VX-2 (LA-C423P)"

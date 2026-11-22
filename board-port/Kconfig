@@ -1,0 +1,32 @@
+## SPDX-License-Identifier: GPL-2.0-only
+# NEC VersaPro VX-2 / LA-C423P. Board hardware initialization remains experimental.
+
+config BOARD_NEC_VERSAPRO_VX2
+	select MAINBOARD_USES_IFD_GBE_REGION
+	select SOC_INTEL_KABYLAKE
+	select BOARD_ROMSIZE_KB_16384
+	select SYSTEM_TYPE_LAPTOP
+	select HAVE_ACPI_TABLES
+	select MAINBOARD_HAS_LIBGFXINIT
+	select GFX_GMA_IGNORE_PRESENCE_STRAPS
+	select MAINBOARD_HAS_TPM2
+	select MEMORY_MAPPED_TPM
+
+if BOARD_NEC_VERSAPRO_VX2
+
+config MAINBOARD_DIR
+	default "nec/versapro_vx2"
+
+config MAINBOARD_PART_NUMBER
+	default "VersaPro VX-2 LA-C423P"
+
+config MAINBOARD_VERSION
+	default "1.0"
+
+config DIMM_MAX
+	default 2
+
+config DIMM_SPD_SIZE
+	default 512
+
+endif # BOARD_NEC_VERSAPRO_VX2
