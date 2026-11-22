@@ -132,3 +132,22 @@ cp -i -- "$out"/{descriptor_testmb.bin,me_testmb.bin,gbe.bin,IntelGopDriver.efi,
 Keep OEM binaries and dumps local. Build using the 16 MiB configuration with an 8 MiB BIOS area. Verify the generated ROM's descriptor and FMAP before flashing.
 
 Avoid committing OEM flash dumps, Intel ME partitions, EC images, private keys, serial numbers, MAC addresses, UUIDs or NVRAM variables.
+
+## HAP descriptor for the reference build
+
+Keep `descriptor_testmb.bin` as the original-layout baseline. From a verified 16 MiB ROM with the full test-board ME and the original region boundaries, run the following in the coreboot checkout. Set `rom` to your own verified input and use a new output path.
+
+```sh
+rom=build/coreboot.rom
+out=nec-vx2-me-hap-only.rom
+desc=3rdparty/blobs/mainboard/nec/vx-2/descriptor_testmb_hap.bin
+
+test "$(stat -c %s "$rom")" = 16777216 &&
+test ! -e "$out" &&
+python3 util/me_cleaner/me_cleaner.py -s -O "$out" "$rom" &&
+( set -C; head -c 4096 "$out" > "$desc" ) &&
+build/util/ifdtool/ifdtool -p sklkbl -d "$desc" |
+  grep -Ei 'Flash Region [0-3] |HAP bit'
+```
+
+Check that HAP is set and the ME and BIOS boundaries match the original descriptor. The HAP build uses the full `me_testmb.bin` and disables build-time ME cleaning. See the [test matrix](test-matrix.md) for the verified boot result.
