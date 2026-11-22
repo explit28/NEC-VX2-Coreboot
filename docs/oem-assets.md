@@ -28,20 +28,107 @@ Keep SPI dumps private. For a different machine, retain its own firmware backups
 
 Initialize the submodules in the coreboot checkout with `git submodule update --init --recursive`. The build also generates the EDK2 payload at `build/UEFIPAYLOAD.fd`.
 
-## Extracting the OEM graphics files
+## Extract the OEM inputs from your own NEC firmware
 
-If the driver was saved as `Intel GOP Driver.efi`, rename it locally to `IntelGopDriver.efi` before building. The EDK2 build recipe uses the source path in a `cp` command, where spaces in an unquoted filename can break the build.
+Use a **full 16 MiB SPI dump from the target NEC VersaPro VX-2**, saved as `VX-2-original.rom` in the coreboot checkout. A vendor update capsule or a BIOS-region-only file cannot supply the descriptor, ME and GbE regions. Use a verified backup from the target board and keep an untouched copy. All steps below read the source image only.
 
-The GOP module was extracted from the **PE32 image section body** of `IntelGopDriver` (GUID `FF0C8745-3270-4439-B74F-3E45F8C77064`). The VBT came from the **Raw section body** of `IntelGopVbt` (GUID `878AC2CC-5343-46F2-B563-51F89DAF56BA`).
+### 1. Extract Flash Descriptor, Intel ME and GbE
 
-Check the VBT before building:
+Use coreboot's `ifdtool`. Set `ifdtool=ifdtool` if the tool is installed on your PATH. The commands check the observed factory layout and stop on a different layout. For a different verified layout, use `ifdtool -p sklkbl -x` in an empty directory and review the extracted regions before choosing a coreboot configuration.
 
-```sh
-sha256sum 3rdparty/blobs/mainboard/nec/vx-2/IntelGopVbt.bin
-# expected for tested VBT:
-# 407ceb6c1a3eafafc9aa441207bc23d69728465ebc046997d300b7052da2ad33
+```bash
+rom="$PWD/VX-2-original.rom"
+ifdtool="$PWD/build/util/ifdtool/ifdtool"
+out=$(mktemp -d "$PWD/vx2-oem-blobs.XXXXXX")
+printf 'Save all six files in %s\n' "$out"
+
+test "$(stat -c %s "$rom")" -eq 16777216 &&
+layout=$("$ifdtool" -p sklkbl -d "$rom") &&
+grep -Ei 'Flash Region 0 .*00000000 - 00000fff' <<< "$layout" &&
+grep -Ei 'Flash Region 1 .*00800000 - 00ffffff' <<< "$layout" &&
+grep -Ei 'Flash Region 2 .*00003000 - 007fffff' <<< "$layout" &&
+grep -Ei 'Flash Region 3 .*00001000 - 00002fff' <<< "$layout" &&
+dd if="$rom" of="$out/descriptor_testmb.bin" bs=4096 count=1 status=none &&
+dd if="$rom" of="$out/me_testmb.bin" bs=4096 skip=3 count=2045 status=none &&
+dd if="$rom" of="$out/gbe.bin" bs=4096 skip=1 count=2 status=none &&
+stat -c '%n: %s bytes' "$out"/{descriptor_testmb,me_testmb,gbe}.bin
 ```
 
-For the successful test, the VBT originally located at that board blob path was replaced with the 4,608-byte VBT extracted from the OEM GOP package; the previous VBT was backed up locally.
+Expected sizes are **4,096**, **8,376,320** and **8,192** bytes respectively. The `_testmb` suffix matches the published configuration. Use the target board's own GbE region, which can carry its MAC address.
+
+### 2. Extract the NEC Intel GOP and matching VBT with UEFITool NE
+
+1. Open `VX-2-original.rom` in [UEFITool NE](https://github.com/LongSoft/UEFITool/releases). Use **Search → GUID** and double-click the matching result to locate the firmware file in the tree.
+2. Search for `FF0C8745-3270-4439-B74F-3E45F8C77064` (`IntelGopDriver`). Expand the file and any encapsulation sections. Right-click the **PE32 image section**, choose **Extract body…**, and save it in the staging directory as `IntelGopDriver.efi`.
+3. Search for `878AC2CC-5343-46F2-B563-51F89DAF56BA` (`IntelGopVbt`). Right-click its **Raw section**, choose **Extract body…**, and save it there as `IntelGopVbt.bin`.
+4. Check the resulting files. The tested GOP is a **69,568-byte x86-64 PE32+ EFI boot-service driver** beginning with `MZ`. The tested VBT is **4,608 bytes**, starts with `$VBT SKYLAKE`, and has the SHA-256 below. Keep the GOP and VBT from the same OEM image. If the GUIDs or formats differ, verify that firmware revision before using the files.
+
+```bash
+file "$out/IntelGopDriver.efi"
+stat -c '%n: %s bytes' "$out"/IntelGop{Driver.efi,Vbt.bin}
+sha256sum "$out/IntelGopVbt.bin"
+# Tested VBT: 407ceb6c1a3eafafc9aa441207bc23d69728465ebc046997d300b7052da2ad33
+```
+
+### 3. Locate and validate the legacy Intel VGA option ROM
+
+The published configuration uses the filename `pci8086,5917.rom` for the target iGPU. The 65,536-byte legacy image inspected in a test build reports **`8086:0406` inside its PCIR header**. No fixed OEM GUID or offset for this image has been verified. Search for the ROM structure below. If you cannot find a matching image in your OEM firmware, mark this input as unresolved. The GOP and the VBT are separate inputs.
+
+First run the following scanner against the full dump. If it finds no candidate, use UEFITool NE to inspect the decompressed sections of the BIOS region. Search for the hex pattern `5043495286800604` (or `5043495286801759` for `8086:5917`). Extract the matching section's **body** to a temporary file and run the same scanner with that file as the first argument. Select an offset only after identifying the matching legacy VGA image. The scanner writes a file only when you pass an explicit candidate offset as the third argument.
+
+```bash
+# List candidates. To extract, add the printed offset after the output path.
+python3 - "$rom" "$out/pci8086,5917.rom" <<'PY'
+import pathlib
+import re
+import struct
+import sys
+
+data = pathlib.Path(sys.argv[1]).read_bytes()
+output = pathlib.Path(sys.argv[2])
+selected = int(sys.argv[3], 0) if len(sys.argv) > 3 else None
+matches = {}
+for match in re.finditer(b"\x55\xaa", data):
+    start = match.start()
+    if start + 0x1a > len(data):
+        continue
+    pcir = start + struct.unpack_from("<H", data, start + 0x18)[0]
+    if pcir < start + 0x1a or pcir + 0x16 > len(data):
+        continue
+    if data[pcir:pcir + 4] != b"PCIR":
+        continue
+    vendor, device = struct.unpack_from("<HH", data, pcir + 4)
+    size = struct.unpack_from("<H", data, pcir + 0x10)[0] * 512
+    if (vendor != 0x8086 or device not in (0x0406, 0x5917)
+            or data[pcir + 0x0d:pcir + 0x10] != b"\x00\x00\x03"
+            or data[pcir + 0x14] != 0 or not size
+            or not (pcir + 0x16 <= start + size <= len(data))):
+        continue
+    matches[start] = size
+    print(f"{start:#x}: Intel {vendor:04x}:{device:04x}, legacy VGA ROM, {size} bytes")
+
+if selected is not None:
+    if selected not in matches:
+        sys.exit("Selected offset is not a validated candidate.")
+    with output.open("xb") as destination:
+        destination.write(data[selected:selected + matches[selected]])
+elif not matches:
+    sys.exit("No candidate in this file. Check decompressed OEM sections.")
+PY
+```
+
+For the tested **`8086:0406`** image, expect **65,536 bytes**. A different PCIR match is a candidate and still needs validation on the target board. A known-good local coreboot ROM that already contains the legacy image can also serve as a local fallback: `build/cbfstool /path/to/working.rom extract -n 'pci8086,5917.rom' -f "$out/pci8086,5917.rom"`.
+
+### 4. Stage the six inputs
+
+After checking all six files, copy them into the board blob directory. The interactive copy prompts before replacing an existing file.
+
+```bash
+dest=3rdparty/blobs/mainboard/nec/vx-2
+mkdir -p "$dest" &&
+cp -i -- "$out"/{descriptor_testmb.bin,me_testmb.bin,gbe.bin,IntelGopDriver.efi,IntelGopVbt.bin} "$out/pci8086,5917.rom" "$dest/"
+```
+
+Keep OEM binaries and dumps local. Build using the 16 MiB configuration with an 8 MiB BIOS area. Verify the generated ROM's descriptor and FMAP before flashing.
 
 Avoid committing OEM flash dumps, Intel ME partitions, EC images, private keys, serial numbers, MAC addresses, UUIDs or NVRAM variables.
