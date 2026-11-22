@@ -11,7 +11,7 @@ All paths are relative to the coreboot source root. The files under `3rdparty/bl
 | `3rdparty/blobs/mainboard/nec/vx-2/descriptor_testmb.bin` | `CONFIG_HAVE_IFD_BIN=y` | Intel Flash Descriptor region extracted from the working 16 MiB `nec-vx2-oem-gop-test12.rom` on the test board. Defines the flash region layout. |
 | `3rdparty/blobs/mainboard/nec/vx-2/me_testmb.bin` | `CONFIG_HAVE_ME_BIN=y` | Intel Management Engine region extracted from the same working test-board ROM. The captured build configuration has `CONFIG_USE_ME_CLEANER` disabled. |
 | `3rdparty/blobs/mainboard/nec/vx-2/gbe.bin` | `CONFIG_HAVE_GBE_BIN=y` | Intel Gigabit Ethernet region from the original NEC SPI dump. Preserve the target machine's own region, which can contain its MAC address. |
-| `ExPLIT/pci8086,5917.rom` | `CONFIG_VGA_BIOS=y` | Intel legacy VGA option ROM used as a build input by the captured configuration (PCI ID `8086:5917`). |
+| `3rdparty/blobs/mainboard/nec/vx-2/pci8086,5917.rom` | `CONFIG_VGA_BIOS=y` | Intel legacy VGA option ROM used as a build input by the captured configuration (PCI ID `8086:5917`). |
 | `3rdparty/blobs/mainboard/nec/vx-2/IntelGopDriver.efi` | `CONFIG_EDK2_GOP_DRIVER=y` | NEC OEM Intel GOP DXE driver for EDK2, 69,568 bytes. |
 | `3rdparty/blobs/mainboard/nec/vx-2/IntelGopVbt.bin` | `CONFIG_INTEL_GMA_ADD_VBT=y` | Matching NEC OEM Video BIOS Table, 4,608 bytes. |
 
