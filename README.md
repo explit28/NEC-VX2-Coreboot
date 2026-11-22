@@ -30,7 +30,6 @@ CONFIG_EDK2_GOP_DRIVER=y
 CONFIG_EDK2_USE_LVGL_RENDERER=y
 CONFIG_EDK2_GOP_FILE="3rdparty/blobs/mainboard/nec/vx-2/IntelGopDriver.efi"
 CONFIG_INTEL_GMA_VBT_FILE="3rdparty/blobs/mainboard/nec/vx-2/IntelGopVbt.bin"
-CONFIG_EDK2_BOOTSPLASH_FILE="Documentation/coreboot_logo.bmp"
 ```
 
 These settings should be understood as a **verified subset**, not a complete reproducible `.config`; the captured configuration is included in `config/coreboot.config` with the device serial number cleared.
@@ -44,6 +43,8 @@ Previous attempts failed to produce a visible image:
 - **NEC OEM UEFI GOP DXE + matching GOP VBT in EDK2: working graphical output.**
 
 The successful test shows that the GOP path works for the tested display. It does **not** establish that all ports, power management, suspend, storage, keyboard, TPM, audio, or OS boot work.
+
+EDK2 uses coreboot’s bundled logo (`Documentation/coreboot_logo.bmp`) by default. The reference `.config` records the default path. The build uses it automatically, so no manual splash setting or logo extraction is required.
 
 ## Firmware component provenance
 
