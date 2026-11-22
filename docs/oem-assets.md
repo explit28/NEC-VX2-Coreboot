@@ -12,8 +12,8 @@ All paths are relative to the coreboot source root. The files under `3rdparty/bl
 | `3rdparty/blobs/mainboard/nec/vx-2/me_testmb.bin` | `CONFIG_HAVE_ME_BIN=y` | Intel Management Engine region extracted from the same working test-board ROM. The captured build configuration has `CONFIG_USE_ME_CLEANER` disabled. |
 | `3rdparty/blobs/mainboard/nec/vx-2/gbe.bin` | `CONFIG_HAVE_GBE_BIN=y` | Intel Gigabit Ethernet region from the original NEC SPI dump. Preserve the target machine's own region, which can contain its MAC address. |
 | `ExPLIT/pci8086,5917.rom` | `CONFIG_VGA_BIOS=y` | Intel legacy VGA option ROM used as a build input by the captured configuration (PCI ID `8086:5917`). |
-| `ExPLIT/NEC-GOP/IntelGopDriver.efi` | `CONFIG_EDK2_GOP_DRIVER=y` | NEC OEM Intel GOP DXE driver for EDK2, 69,568 bytes. |
-| `3rdparty/blobs/mainboard/nec/vx-2/vbt.bin` | `CONFIG_INTEL_GMA_ADD_VBT=y` | Matching NEC OEM Video BIOS Table, 4,608 bytes. |
+| `3rdparty/blobs/mainboard/nec/vx-2/IntelGopDriver.efi` | `CONFIG_EDK2_GOP_DRIVER=y` | NEC OEM Intel GOP DXE driver for EDK2, 69,568 bytes. |
+| `3rdparty/blobs/mainboard/nec/vx-2/IntelGopVbt.bin` | `CONFIG_INTEL_GMA_ADD_VBT=y` | Matching NEC OEM Video BIOS Table, 4,608 bytes. |
 
 `CONFIG_VGA_BIOS=y` includes the legacy option ROM in the build, while `CONFIG_VGA_ROM_RUN` is disabled for coreboot. The visible splash was observed with NEC GOP in EDK2. A build with the legacy VGA ROM omitted has not been tested.
 
@@ -30,12 +30,14 @@ Initialize the submodules in the coreboot checkout with `git submodule update --
 
 ## Extracting the OEM graphics files
 
+If the driver was saved as `Intel GOP Driver.efi`, rename it locally to `IntelGopDriver.efi` before building. The EDK2 build recipe uses the source path in a `cp` command, where spaces in an unquoted filename can break the build.
+
 The GOP module was extracted from the **PE32 image section body** of `IntelGopDriver` (GUID `FF0C8745-3270-4439-B74F-3E45F8C77064`). The VBT came from the **Raw section body** of `IntelGopVbt` (GUID `878AC2CC-5343-46F2-B563-51F89DAF56BA`).
 
 Check the VBT before building:
 
 ```sh
-sha256sum 3rdparty/blobs/mainboard/nec/vx-2/vbt.bin
+sha256sum 3rdparty/blobs/mainboard/nec/vx-2/IntelGopVbt.bin
 # expected for tested VBT:
 # 407ceb6c1a3eafafc9aa441207bc23d69728465ebc046997d300b7052da2ad33
 ```
