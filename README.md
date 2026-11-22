@@ -1,6 +1,6 @@
 # NEC VersaPro VX-2 — coreboot + EDK2 (experimental port)
 
-**Status (2026-11-22): graphical EDK2 setup confirmed on hardware.** The NEC VersaPro VX-2 successfully displays the coreboot logo via the **original NEC Intel GOP DXE driver** running in MrChromebox EDK2, then enters the UEFI Shell. No SSD was installed at this test, so storage detection and OS boot remain **untested**.
+**Status (2026-11-22): graphical EDK2 setup, USB live boot, and boot from internal NVMe confirmed on hardware.** The NVMe boot was verified with the full original ME firmware and HAP enabled in the flash descriptor. See the [test matrix](docs/test-matrix.md) for the tested variant and remaining checks.
 
 > Experimental, unofficial port. Keep a verified backup of the original SPI flash and a known-recoverable external programmer setup. Do not flash another device's complete image. The bundled snapshot is not necessarily ready to flash without integrating its board-specific configuration and required OEM components.
 
@@ -15,9 +15,9 @@
 
 ## Milestone: graphical UEFI output
 
-The NEC OEM GOP also renders the LVGL setup menu. USB boot devices did not appear in the boot menu during the latest test. USB enumeration and external keyboard input still need testing.
+The NEC OEM GOP also renders the LVGL setup menu. A subsequent build booted Ubuntu Live from USB after the USB and PCIe bring-up changes. Per-port SuperSpeed and pre-boot external keyboard input still need testing.
 
-The reference configuration enables LVGL and uses the test-board descriptor and ME inputs with the original 16 MiB SPI layout and 8 MiB BIOS region. It uses the working baseline with build-time ME cleaning disabled. The exact local configuration of the photographed build has not been captured. (If desired, pass `KERNELVERSION=26.09` to `make` to set the displayed version.)
+The reference configuration enables LVGL and uses the test-board descriptor and ME inputs with the original 16 MiB SPI layout and 8 MiB BIOS region. It records the earlier baseline with build-time ME cleaning disabled. The later HAP test used a separate descriptor; see the test matrix. The exact local configuration of the photographed build has not been captured. (If desired, pass `KERNELVERSION=26.09` to `make` to set the displayed version.)
 
 The following combination was confirmed to show the **coreboot logo through EDK2**, followed by a functional UEFI Shell:
 
@@ -42,7 +42,7 @@ Previous attempts failed to produce a visible image:
 - Legacy x86 Intel option ROM (`pci8086,5917.rom`): ROM executed and VBE modes `0x118` (1024×768×32) and `0x11b` (1280×1024×32) were attempted; the panel backlight lit but no image appeared.
 - **NEC OEM UEFI GOP DXE + matching GOP VBT in EDK2: working graphical output.**
 
-The successful test shows that the GOP path works for the tested display. It does **not** establish that all ports, power management, suspend, storage, keyboard, TPM, audio, or OS boot work.
+The GOP path works for the tested display. External video outputs, suspend, TPM, and audio still need hardware validation.
 
 EDK2 uses coreboot’s bundled logo (`Documentation/coreboot_logo.bmp`) by default. The reference `.config` records the default path. The build uses it automatically, so no manual splash setting or logo extraction is required.
 
