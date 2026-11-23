@@ -16,7 +16,7 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 | Internal NVMe and Secure Boot | ✅ Working | Ubuntu booted from NVMe with Secure Boot enabled. |
 | Secure Boot persistence | 🟡 Needs testing | Verify the setting across cold starts. |
 | SD reader | ✅ Working | SD write test passed. |
-| Internal AX200 and D-Link USB WLAN | ✅ Working | Internal AX200 worked on the assembled VX-2 with the EC fix. The tested USB adapter also connected. |
+| Internal AX200 WLAN | ✅ Working | Internal AX200 worked on the assembled VX-2 with the EC fix. |
 | AX200 after resume and internal AC 3165 | 🟡 Needs testing | Verify AX200 after resume and retest the AC 3165 with the EC fix. |
 | SATA, mSATA and SATA optical drive | ✅ Working | The tester confirmed operation on the VX-2. |
 | CardBus and PCMCIA | 🟡 Partially verified | A 32-bit FireWire card enumerated and its driver initialized. Transfers and 16-bit PCMCIA are pending. |
