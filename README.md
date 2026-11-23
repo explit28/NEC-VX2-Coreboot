@@ -9,7 +9,8 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 | Hardware or function | Status | Verified result or open test |
 |---|---|---|
 | Internal display and UEFI | ✅ Working | NEC GOP + VBT, graphical EDK II setup and UEFI Shell. |
-| External HDMI and VGA | 🟡 Needs testing | Verify both outputs. |
+| External HDMI | ❌ Fails | No video output in the tested setup. |
+| External VGA | 🟡 Needs testing | Hardware validation pending. |
 | USB | ✅ Working | USB live boot and USB devices on all five ports. |
 | USB SuperSpeed and pre-boot keyboard | 🟡 Needs testing | Verify SuperSpeed on each port and keyboard input before Linux boots. |
 | Internal NVMe and Secure Boot | ✅ Working | Ubuntu booted from NVMe with Secure Boot enabled. |
@@ -17,10 +18,11 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 | SD reader | ✅ Working | SD write test passed. |
 | Internal AX200 and D-Link USB WLAN | ✅ Working | Internal AX200 worked on the assembled VX-2 with the EC fix. The tested USB adapter also connected. |
 | AX200 after resume and internal AC 3165 | 🟡 Needs testing | Verify AX200 after resume and retest the AC 3165 with the EC fix. |
-| mSATA | 🟡 Partially verified | Drive detected and 64 MiB read completed. Boot and writes are pending. |
+| SATA, mSATA and SATA optical drive | ✅ Working | The tester confirmed operation on the VX-2. |
 | CardBus and PCMCIA | 🟡 Partially verified | A 32-bit FireWire card enumerated and its driver initialized. Transfers and 16-bit PCMCIA are pending. |
 | 64 MiB CardBus prefetchable window | ❌ Fails | Allocation failed. The tested card initialized using smaller windows. |
-| Bluetooth, audio and Ethernet | 🟡 Partially verified | Bluetooth HCI detected. Audio and Ethernet drivers bound. Pairing, playback and traffic are pending. |
+| Sound | ✅ Working | The tester confirmed audio playback. |
+| Bluetooth and Ethernet | 🟡 Partially verified | Bluetooth HCI detected and Ethernet driver bound. Pairing and network traffic remain untested. |
 | Suspend/resume, internal input, battery and charging | 🟡 Needs testing | Hardware validation pending. |
 | TPM 2.0 under Linux | ❌ Fails | `/dev/tpm0` and `/dev/tpmrm0` were absent. The systemd device jobs timed out after about 90 seconds. |
 
@@ -29,7 +31,7 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 
 | Problem | Change or finding | Result |
 |---|---|---|
-| Internal panel stayed black with libgfxinit | eDP AUX and external DDC probes failed to read EDID. Switched to the NEC OEM GOP and matching VBT through EDK II. | **Resolved for the internal display**. External outputs remain untested. |
+| Internal panel stayed black with libgfxinit | eDP AUX and external DDC probes failed to read EDID. Switched to the NEC OEM GOP and matching VBT through EDK II. | **Resolved for the internal display**. HDMI fails. VGA remains untested. |
 | Legacy Intel VGA ROM ran but produced no visible image | VBE modes `0x118` and `0x11b` lit the backlight without visible output. The same OEM GOP and VBT path provided the working display. | **Legacy path failed**. The GOP path showed the logo, graphical setup and UEFI Shell. |
 | USB boot was unreliable during bring-up | Tested again after adding the board's USB port configuration and PCIe bring-up changes. | **USB live boot confirmed**. USB devices worked on all five ports. |
 | Internal NVMe disappeared with trimmed Intel ME | Restored the full original ME. Tested first with HAP clear, then with HAP set and build-time ME cleaning disabled. | **NVMe boot confirmed with full ME and HAP set**. The earlier reboot loop has no confirmed root cause. |
@@ -56,8 +58,8 @@ The NEC VX-2 port can serve as a starting point for a separate **ThinkPad L570**
 | Compal PCB | `LA-C423P` on the tested unit | `LA-C422P` (CILL1/CILL2) | `LA-C421P` (AILL1/AILL2) |
 | CPU and integrated graphics | Core i5-8250U (Kaby Lake-R, 4 cores), UHD 620 | Skylake or Kaby Lake variants, HD 520, 610 or 620 | Skylake variants, HD 510 or 520 |
 | Memory | DDR4 | Two DDR4 SO-DIMM slots | Two DDR3L SO-DIMM slots |
-| External display | VGA and HDMI, functional tests pending | VGA and Mini DisplayPort | VGA and Mini DisplayPort |
-| Internal storage | NVMe boot verified with a PCIe adapter in the 2.5-inch drive bay. mSATA reads also verified | 2.5-inch SATA or M.2 PCIe NVMe in the same drive bay with a dedicated adapter. Optional M.2 SATA storage in the WWAN slot on some configurations | 2.5-inch SATA HDD, SSD or SSHD configurations listed |
+| External display | HDMI fails. VGA remains untested. | VGA and Mini DisplayPort | VGA and Mini DisplayPort |
+| Internal storage | NVMe boot verified with a PCIe adapter in the 2.5-inch drive bay. SATA, mSATA and SATA optical drive operation also confirmed | 2.5-inch SATA or M.2 PCIe NVMe in the same drive bay with a dedicated adapter. Optional M.2 SATA storage in the WWAN slot on some configurations | 2.5-inch SATA HDD, SSD or SSHD configurations listed |
 | Expansion | 32-bit CardBus enumeration verified. Five physical USB ports | Optional ExpressCard/34, four USB ports, ThinkPad dock connector | Optional ExpressCard/34, four USB ports with speeds depending on model, ThinkPad dock connector |
 | TPM | OEM firmware exposed TPM 2.0 via Linux `tpm_tis`. Detection under the tested coreboot build is unresolved | Discrete TPM 2.0 | Lenovo lists discrete TPM 1.2 and chipset firmware TPM 2.0 |
 

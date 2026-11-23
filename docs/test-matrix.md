@@ -15,15 +15,19 @@
 | UEFI Secure Boot and Ubuntu NVMe boot | ✅ Working | `mokutil --sb-state` reported enabled. The kernel confirmed EFI Secure Boot lockdown. Ubuntu booted via `shimx64.efi` with `/` on `nvme0n1p2`. |
 | SD card | ✅ Working | The tester confirmed that the card reader works and the SD write test passed. The test log shows a mounted FAT card. Read-back after reinsertion was not separately reported. |
 | 32-bit CardBus | 🟡 Partially verified | O2Micro `1217:8134` with `yenta_cardbus` enumerated an inserted NEC uPD72870 FireWire card (`1033:00cd`). `firewire_ohci` initialized it and Linux created `fw0` at S400. External FireWire transfer and 16-bit PCMCIA remain untested. |
-| mSATA | 🟡 Partially verified | Kingston `SNS4151S316G` detected on `ata3` at 6.0 Gbit/s. A 64 MiB read completed while the NVMe was also present. SATA boot and writes remain untested. |
+| SATA | ✅ Working | Confirmed on the VX-2 by the tester. |
+| mSATA | ✅ Working | Confirmed by the tester. Earlier logs recorded a 64 MiB read from the Kingston `SNS4151S316G` at 6.0 Gbit/s. |
+| SATA optical drive | ✅ Working | Confirmed on the VX-2 by the tester. |
 | Internal M.2 WLAN (Intel AX200, `8086:2723`) | ✅ Working | The tester confirmed working WLAN on the assembled VX-2 after flashing the EC initialization fix. The Intel AC 3165 on the bare board has yet to be retested with the fix. |
 | Bluetooth | 🟡 Partially verified | HCI detected and unblocked. Observed before the WLAN fix. Pairing and traffic remain untested. |
-| Audio and Ethernet | 🟡 Partially verified | Drivers bound. `snd_hda_intel` and `e1000e`. Playback and Ethernet traffic remain untested. |
+| Sound | ✅ Working | The tester confirmed audio playback. |
+| Ethernet | 🟡 Partially verified | `e1000e` bound. Network traffic remains untested. |
 
 ## Known failures
 
 | Function | Status | Observed result |
 |---|---|---|
+| External HDMI | ❌ Fails | The tester reported no video output. |
 | TPM 2.0 under Linux | ❌ Fails | The ACPI TPM2 table was present. `/dev/tpm0` and `/dev/tpmrm0` were absent, and both systemd device jobs timed out after about 90 seconds. |
 | 64 MiB prefetchable CardBus window | ❌ Fails | Allocation failed. Smaller windows were sufficient for the tested FireWire card's BARs and driver initialization. |
 
@@ -49,5 +53,5 @@ The tester confirmed internal AX200 WLAN working after flashing the modified BIO
 - Test actual FireWire I/O and a 16-bit PCMCIA card separately.
 - Retest the bare-board Intel AC 3165 with the WLAN fix. Check WLAN after suspend/resume and test Bluetooth pairing.
 - Check TPM availability on the assembled unit and compare against OEM firmware if still absent. The observed software wait and the underlying TPM detection problem need separate checks.
-- Verify USB SuperSpeed per port, pre-boot USB keyboard, suspend/resume, internal input, audio, Ethernet, external displays, and battery/charging on the assembled notebook.
+- Verify USB SuperSpeed per port, pre-boot USB keyboard, suspend/resume, internal input, Ethernet, external VGA, and battery/charging on the assembled notebook.
 - The reference configuration now disables the persistent SPI flash console (`CONFIG_CONSOLE_SPI_FLASH`). Keep CBMEM logging, SPI flash support, and SMMSTORE enabled. The SPI-console-off build still needs hardware validation.
