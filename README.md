@@ -6,12 +6,24 @@
 
 The results below cover the tested coreboot 26.09 builds on the VX-2. See the [test matrix](docs/test-matrix.md) for the hardware and firmware details of each result.
 
-| Status | Functions |
-|---|---|
-| **Working on hardware** | Internal display with NEC GOP and VBT, EDK II graphical setup and UEFI Shell, USB live boot and USB devices on all five ports, Ubuntu boot from internal NVMe with UEFI Secure Boot enabled, SD card writes, internal Intel AX200 WLAN on the assembled notebook, and connection with the tested D-Link USB WLAN adapter. |
-| **Partially verified** | mSATA detection and a 64 MiB read, 32-bit CardBus enumeration and FireWire driver initialization, Bluetooth HCI detection, and audio and Ethernet driver binding. |
-| **Known failure** | Linux did not expose `/dev/tpm0` or `/dev/tpmrm0` in the tested build. The corresponding systemd jobs timed out after about 90 seconds. |
-| **Still to test** | External HDMI/VGA, USB SuperSpeed on each port, pre-boot USB keyboard, suspend/resume, internal input, battery and charging, AX200 after resume, AC 3165 with the WLAN fix, Bluetooth pairing and traffic, audio playback, Ethernet traffic, SATA boot and writes, FireWire transfers, 16-bit PCMCIA, and Secure Boot setting persistence across cold starts. |
+| Hardware or function | Status | Verified result or open test |
+|---|---|---|
+| Internal display and UEFI | ✅ Working | NEC GOP + VBT, graphical EDK II setup and UEFI Shell. |
+| External HDMI and VGA | 🟡 Needs testing | Verify both outputs. |
+| USB | ✅ Working | USB live boot and USB devices on all five ports. |
+| USB SuperSpeed and pre-boot keyboard | 🟡 Needs testing | Verify SuperSpeed on each port and keyboard input before Linux boots. |
+| Internal NVMe and Secure Boot | ✅ Working | Ubuntu booted from NVMe with Secure Boot enabled. |
+| Secure Boot persistence | 🟡 Needs testing | Verify the setting across cold starts. |
+| SD reader | ✅ Working | SD write test passed. |
+| Internal AX200 and D-Link USB WLAN | ✅ Working | Internal AX200 worked on the assembled VX-2 with the EC fix. The tested USB adapter also connected. |
+| AX200 after resume and internal AC 3165 | 🟡 Needs testing | Verify AX200 after resume and retest the AC 3165 with the EC fix. |
+| mSATA | 🟡 Partially verified | Drive detected and 64 MiB read completed. Boot and writes are pending. |
+| CardBus and PCMCIA | 🟡 Partially verified | A 32-bit FireWire card enumerated and its driver initialized. Transfers and 16-bit PCMCIA are pending. |
+| 64 MiB CardBus prefetchable window | ❌ Fails | Allocation failed. The tested card initialized using smaller windows. |
+| Bluetooth, audio and Ethernet | 🟡 Partially verified | Bluetooth HCI detected. Audio and Ethernet drivers bound. Pairing, playback and traffic are pending. |
+| Suspend/resume, internal input, battery and charging | 🟡 Needs testing | Hardware validation pending. |
+| TPM 2.0 under Linux | ❌ Fails | `/dev/tpm0` and `/dev/tpmrm0` were absent. The systemd device jobs timed out after about 90 seconds. |
+
 
 ## Development problems and resolutions
 

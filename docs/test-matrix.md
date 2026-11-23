@@ -4,28 +4,28 @@
 
 | Test | Result | Evidence / notes |
 |---|---|---|
-| Coreboot boot stages reach EDK2 payload | PASS | Persistent SPI console: `Jumping to boot code` |
-| OEM Intel GOP + VBT graphical output | **PASS** | Visible coreboot logo in EDK2 |
-| EDK2 UEFI Shell | **PASS** | Shell appeared after splash |
-| EDK2 graphical setup (LVGL + NEC OEM GOP) | **PASS** | Graphical Firmware Setup photographed on the test board |
-| USB boot into Ubuntu Live | **PASS** | Booted a USB stick after the USB and PCIe bring-up changes. Per-port SuperSpeed operation remains to be verified. |
-| USB on all five physical ports | **PASS** | The tester confirmed working USB on all five ports. Negotiated SuperSpeed rates were not recorded per port. |
-| USB WLAN | **PASS (connection)** | The D-Link adapter connected after unloading the internal Intel WLAN driver and enabling Wi-Fi in NetworkManager. |
-| Internal NVMe detection and Linux boot with HAP | **PASS** | Kingston NV2 `2646:501d` at `03:00.0` behind `00:1c.4`. Linux 7.0.0-44 mounted its ext4 root on `nvme0n1p2` and remounted it read/write. |
-| UEFI Secure Boot and Ubuntu NVMe boot | **PASS** | `mokutil --sb-state` reported enabled. The kernel confirmed EFI Secure Boot lockdown. Ubuntu booted via `shimx64.efi` with `/` on `nvme0n1p2`. |
-| SD card | **PASS** | The tester confirmed that the card reader works and the SD write test passed. The test log shows a mounted FAT card. Read-back after reinsertion was not separately reported. |
-| 32-bit CardBus | **PASS (enumeration and driver)** | O2Micro `1217:8134` with `yenta_cardbus` enumerated an inserted NEC uPD72870 FireWire card (`1033:00cd`). `firewire_ohci` initialized it and Linux created `fw0` at S400. External FireWire transfer and 16-bit PCMCIA remain untested. |
-| mSATA | **PASS (read)** | Kingston `SNS4151S316G` detected on `ata3` at 6.0 Gbit/s. A 64 MiB read completed while the NVMe was also present. SATA boot and writes remain untested. |
-| Internal M.2 WLAN (Intel AX200, `8086:2723`) | **PASS** | The tester confirmed working WLAN on the assembled VX-2 after flashing the EC initialization fix. The Intel AC 3165 on the bare board has yet to be retested with the fix. |
-| Bluetooth | HCI detected and unblocked | Observed before the WLAN fix. Pairing and traffic remain untested. |
-| Audio and Ethernet | Drivers bound | `snd_hda_intel` and `e1000e`. Playback and Ethernet traffic remain untested. |
+| Coreboot boot stages reach EDK2 payload | ✅ Working | Persistent SPI console: `Jumping to boot code` |
+| OEM Intel GOP + VBT graphical output | ✅ Working | Visible coreboot logo in EDK2 |
+| EDK2 UEFI Shell | ✅ Working | Shell appeared after splash |
+| EDK2 graphical setup (LVGL + NEC OEM GOP) | ✅ Working | Graphical Firmware Setup photographed on the test board |
+| USB boot into Ubuntu Live | ✅ Working | Booted a USB stick after the USB and PCIe bring-up changes. Per-port SuperSpeed operation remains to be verified. |
+| USB on all five physical ports | ✅ Working | The tester confirmed working USB on all five ports. Negotiated SuperSpeed rates were not recorded per port. |
+| USB WLAN | ✅ Working (connection) | The D-Link adapter connected after unloading the internal Intel WLAN driver and enabling Wi-Fi in NetworkManager. |
+| Internal NVMe detection and Linux boot with HAP | ✅ Working | Kingston NV2 `2646:501d` at `03:00.0` behind `00:1c.4`. Linux 7.0.0-44 mounted its ext4 root on `nvme0n1p2` and remounted it read/write. |
+| UEFI Secure Boot and Ubuntu NVMe boot | ✅ Working | `mokutil --sb-state` reported enabled. The kernel confirmed EFI Secure Boot lockdown. Ubuntu booted via `shimx64.efi` with `/` on `nvme0n1p2`. |
+| SD card | ✅ Working | The tester confirmed that the card reader works and the SD write test passed. The test log shows a mounted FAT card. Read-back after reinsertion was not separately reported. |
+| 32-bit CardBus | 🟡 Partially verified | O2Micro `1217:8134` with `yenta_cardbus` enumerated an inserted NEC uPD72870 FireWire card (`1033:00cd`). `firewire_ohci` initialized it and Linux created `fw0` at S400. External FireWire transfer and 16-bit PCMCIA remain untested. |
+| mSATA | 🟡 Partially verified | Kingston `SNS4151S316G` detected on `ata3` at 6.0 Gbit/s. A 64 MiB read completed while the NVMe was also present. SATA boot and writes remain untested. |
+| Internal M.2 WLAN (Intel AX200, `8086:2723`) | ✅ Working | The tester confirmed working WLAN on the assembled VX-2 after flashing the EC initialization fix. The Intel AC 3165 on the bare board has yet to be retested with the fix. |
+| Bluetooth | 🟡 Partially verified | HCI detected and unblocked. Observed before the WLAN fix. Pairing and traffic remain untested. |
+| Audio and Ethernet | 🟡 Partially verified | Drivers bound. `snd_hda_intel` and `e1000e`. Playback and Ethernet traffic remain untested. |
 
 ## Known failures
 
-| Function | Observed result |
-|---|---|
-| TPM 2.0 under Linux | The ACPI TPM2 table was present. `/dev/tpm0` and `/dev/tpmrm0` were absent, and both systemd device jobs timed out after about 90 seconds. |
-| 64 MiB prefetchable CardBus window | Allocation failed. Smaller windows were sufficient for the tested FireWire card's BARs and driver initialization. |
+| Function | Status | Observed result |
+|---|---|---|
+| TPM 2.0 under Linux | ❌ Fails | The ACPI TPM2 table was present. `/dev/tpm0` and `/dev/tpmrm0` were absent, and both systemd device jobs timed out after about 90 seconds. |
+| 64 MiB prefetchable CardBus window | ❌ Fails | Allocation failed. Smaller windows were sufficient for the tested FireWire card's BARs and driver initialization. |
 
 See the [development problem table](../README.md#development-problems-and-resolutions) for the failed graphics approaches and the changes that restored functionality.
 
@@ -43,7 +43,7 @@ The OEM DSDT writes the EC field `DCWL` at MMIO address `0xfe80013a`, bit 5. The
 
 The tester confirmed internal AX200 WLAN working after flashing the modified BIOS region. The individual effects of the two firmware changes and the electrical routing of `W_DISABLE1#` were not tested separately.
 
-## Remaining firmware tests
+## 🟡 Remaining firmware tests
 
 - The Secure Boot build uses `SMMSTORE=y` and `EDK2_SECURE_BOOT_SUPPORT=y`, with enforcement off by default in the reference configuration. The ROM has a 512 KiB `SMMSTORE` region at `0x810000`, and its descriptor reports HAP set. The Ubuntu test boot confirmed enforcement. Setup-menu behavior and repeated cold-start persistence were not separately logged.
 - Test actual FireWire I/O and a 16-bit PCMCIA card separately.
