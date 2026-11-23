@@ -41,6 +41,7 @@ The NEC VX-2 port can serve as a starting point for a separate **ThinkPad L570**
 
 | Hardware | NEC VersaPro VX-2 (tested unit) | ThinkPad L570 (Lenovo PSREF) | ThinkPad L560 (Lenovo PSREF) |
 |---|---|---|---|
+| Compal PCB | `LA-C423P` on the tested unit | `LA-C422P` (CILL1/CILL2) | `LA-C421P` (AILL1/AILL2) |
 | CPU and integrated graphics | Core i5-8250U (Kaby Lake-R, 4 cores), UHD 620 | Skylake or Kaby Lake variants, HD 520, 610 or 620 | Skylake variants, HD 510 or 520 |
 | Memory | DDR4 | Two DDR4 SO-DIMM slots | Two DDR3L SO-DIMM slots |
 | External display | VGA and HDMI, functional tests pending | VGA and Mini DisplayPort | VGA and Mini DisplayPort |
@@ -57,6 +58,8 @@ The tested VX-2 boots NVMe through a dedicated caddy connected to the PCIe-capab
 For the ThinkPad L570, Lenovo calls the part the **M.2 solid-state drive adapter in the internal-storage-drive bay**. The [L570 service manual](https://download.lenovo.com/pccbbs/mobiles_pdf/l570_hmm_en_sp40k88826_02.pdf) shows the adapter. [Drive Solutions' L570 parts reference](https://drivesolutions.com/upgrade/model/view/id/440900/) identifies **01AY477** as the M.2 2280 NVMe adapter and **01LW340** as its cable. The **01LW339** cable is for the SATA drive configuration.
 
 The project has confirmed the NVMe caddy approach on the VX-2. The label on the tested NEC caddy has not been matched to the Lenovo FRU, and compatibility of those FRUs with the L560 is not verified.
+
+The schematic indexes for [L570 LA-C422P](https://awesomeheader.com/model/lenovo-thinkpad-l570/) and [L560 LA-C421P](https://eletronicabr.com/en/files/file/44855-lenovo-l560-notebook-electrical-schematic-aill1-aill2-and-la-c421p-rev-10-schematic/) identify different PCBs. Prioritize the L570 for a new port based on the VX-2 work. For the L560, use the VX-2 as a reference for SoC bring-up and derive board initialization from the LA-C421P schematic and target firmware. The PCB identifiers alone do not establish shared routing.
 
 Lenovo references: [ThinkPad L570 platform specifications](https://psref.lenovo.com/syspool/Sys/PDF/ThinkPad/ThinkPad_L570/ThinkPad_L570_Spec.PDF), [ThinkPad L570 model configurations](https://psref.lenovo.com/Product/ThinkPad_L570), [ThinkPad L560 platform specifications](https://psref.lenovo.com/syspool/Sys/PDF/ThinkPad/ThinkPad_L560/ThinkPad_L560_Spec.PDF).
 
