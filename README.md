@@ -11,8 +11,9 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 | Internal display and UEFI | ✅ Working | NEC GOP + VBT, graphical EDK II setup and UEFI Shell. |
 | External HDMI | ❌ No video | Linux reports `HDMI-A-1` connected and reads a 256-byte EDID after the DDPB GPIO change. The monitor still shows no image. |
 | External VGA | ✅ Working | The tester confirmed video output on the VX-2. |
-| USB | ✅ Working | USB live boot and USB devices on all five ports. |
-| USB SuperSpeed and pre-boot keyboard | 🟡 Needs testing | Verify SuperSpeed on each port and keyboard input before Linux boots. |
+| USB 2.0 | ✅ Working | USB live boot and USB devices on all five ports. |
+| USB SuperSpeed | ✅ Working | SuperSpeed operation confirmed on the VX-2. |
+| Pre-boot USB keyboard | ✅ Working | USB keyboard input works before the operating system boots. |
 | Internal NVMe and Secure Boot | ✅ Working | Ubuntu booted from NVMe with Secure Boot enabled. |
 | Windows 11 with Secure Boot | ✅ Working | The tester confirmed Windows 11 boots on the VX-2 with coreboot and UEFI Secure Boot enabled. |
 | Secure Boot persistence | 🟡 Needs testing | Verify the setting across cold starts. |
@@ -25,7 +26,10 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 | Sound | ✅ Working | The tester confirmed audio playback. |
 | Bluetooth | ✅ Working | Bluetooth functionality confirmed on the VX-2. |
 | RJ45 Ethernet | ✅ Working | Wired Ethernet functionality confirmed on the VX-2. |
-| Suspend/resume, internal input, battery and charging | 🟡 Needs testing | Hardware validation pending. |
+| Suspend/resume | ✅ Working | The VX-2 suspends and resumes successfully. |
+| Internal input | ✅ Working | Internal input works on the VX-2. |
+| Battery operation | ✅ Working | The VX-2 operates on battery power. |
+| Battery charging | ✅ Working | The battery charges. |
 | TPM 2.0 under Linux | ✅ Detected | `tpm_tis` detected TPM 2.0 via `MSFT0101:00`. Linux created `/dev/tpm0` and `/dev/tpmrm0`. TPM command and measured boot validation are pending. |
 
 
