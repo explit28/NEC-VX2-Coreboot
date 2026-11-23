@@ -8,8 +8,10 @@
 | OEM Intel GOP + VBT graphical output | ✅ Working | Visible coreboot logo in EDK2 |
 | EDK2 UEFI Shell | ✅ Working | Shell appeared after splash |
 | EDK2 graphical setup (LVGL + NEC OEM GOP) | ✅ Working | Graphical Firmware Setup photographed on the test board |
-| USB boot into Ubuntu Live | ✅ Working | Booted a USB stick after the USB and PCIe bring-up changes. Per-port SuperSpeed operation remains to be verified. |
-| USB on all five physical ports | ✅ Working | The tester confirmed working USB on all five ports. Negotiated SuperSpeed rates were not recorded per port. |
+| USB boot into Ubuntu Live | ✅ Working | Booted a USB stick after the USB and PCIe bring-up changes. |
+| USB 2.0 | ✅ Working | USB devices worked on all five physical ports. |
+| USB SuperSpeed | ✅ Working | SuperSpeed operation confirmed on the VX-2. |
+| Pre-boot USB keyboard | ✅ Working | USB keyboard input works before the operating system boots. |
 | Internal NVMe detection and Linux boot with HAP | ✅ Working | Kingston NV2 `2646:501d` at `03:00.0` behind `00:1c.4`. Linux 7.0.0-44 mounted its ext4 root on `nvme0n1p2` and remounted it read/write. |
 | UEFI Secure Boot and Ubuntu NVMe boot | ✅ Working | `mokutil --sb-state` reported enabled. The kernel confirmed EFI Secure Boot lockdown. Ubuntu booted via `shimx64.efi` with `/` on `nvme0n1p2`. |
 | Windows 11 with Secure Boot | ✅ Working | The tester confirmed Windows 11 boots on the VX-2 with coreboot and UEFI Secure Boot enabled. |
@@ -24,6 +26,10 @@
 | RJ45 Ethernet | ✅ Working | Wired Ethernet functionality confirmed on the VX-2. |
 | TPM 2.0 under Linux | ✅ Detected | `tpm_tis` detected TPM 2.0 via `MSFT0101:00`. Linux created `/dev/tpm0` and `/dev/tpmrm0`. TPM command and measured boot validation are pending. |
 | External VGA | ✅ Working | The tester confirmed video output on the VX-2. |
+| Suspend/resume | ✅ Working | The VX-2 suspends and resumes successfully. |
+| Internal input | ✅ Working | Internal input works on the VX-2. |
+| Battery operation | ✅ Working | The VX-2 operates on battery power. |
+| Battery charging | ✅ Working | The battery charges. |
 
 ## Known failures
 
@@ -54,5 +60,5 @@ The tester confirmed internal AX200 WLAN working after flashing the modified BIO
 - Test actual FireWire I/O and a 16-bit PCMCIA card separately.
 - Retest the bare-board Intel AC 3165 with the WLAN fix. Check WLAN after suspend/resume and test Bluetooth pairing.
 - Validate TPM command execution and measured boot separately. The detection test used `systemd.tpm2_wait=0`.
-- Verify USB SuperSpeed per port, pre-boot USB keyboard, suspend/resume, internal input, and battery/charging on the assembled notebook.
+- Record the negotiated SuperSpeed rate for each port.
 - The reference configuration now disables the persistent SPI flash console (`CONFIG_CONSOLE_SPI_FLASH`). Keep CBMEM logging, SPI flash support, and SMMSTORE enabled. The SPI-console-off build still needs hardware validation.
