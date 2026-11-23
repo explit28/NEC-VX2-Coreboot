@@ -14,6 +14,7 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 | USB | ✅ Working | USB live boot and USB devices on all five ports. |
 | USB SuperSpeed and pre-boot keyboard | 🟡 Needs testing | Verify SuperSpeed on each port and keyboard input before Linux boots. |
 | Internal NVMe and Secure Boot | ✅ Working | Ubuntu booted from NVMe with Secure Boot enabled. |
+| Windows 11 | ✅ Working | The tester confirmed Windows 11 runs on the VX-2 with coreboot. |
 | Secure Boot persistence | 🟡 Needs testing | Verify the setting across cold starts. |
 | SD reader | ✅ Working | SD write test passed. |
 | Internal AX200 WLAN | ✅ Working | Internal AX200 worked on the assembled VX-2 with the EC fix. |
