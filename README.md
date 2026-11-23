@@ -53,11 +53,13 @@ Reuse the related Intel SoC initialization and the VX-2 bring-up workflow for me
 
 ### NVMe adapter for the 2.5-inch drive bay
 
-The tested VX-2 boots NVMe through a dedicated caddy connected to the PCIe-capable drive-bay connector. The drive bay also accepts SATA storage. The caddy carries PCIe signals to an M.2 NVMe SSD.
+The NEC VX-2 boots from an M.2 2280 PCIe NVMe SSD installed in a direct-plug caddy in the 2.5-inch drive bay. The caddy's onboard connector mates directly with the PCIe-capable drive-bay connector. No separate cable is required. The same bay can also accept a 2.5-inch SATA drive.
 
-For the ThinkPad L570, Lenovo calls the part the **M.2 solid-state drive adapter in the internal-storage-drive bay**. The [L570 service manual](https://download.lenovo.com/pccbbs/mobiles_pdf/l570_hmm_en_sp40k88826_02.pdf) shows the adapter. [Drive Solutions' L570 parts reference](https://drivesolutions.com/upgrade/model/view/id/440900/) identifies **01AY477** as the M.2 2280 NVMe adapter and **01LW340** as its cable. The **01LW339** cable is for the SATA drive configuration.
+The tested caddy is marked **`AM1SS000100`** on the metal tray. Search for that marking when comparing replacements. The [ThinkPad L570 hardware maintenance manual](https://download.lenovo.com/pccbbs/mobiles_pdf/l570_hmm_en_sp40k88826_02.pdf) describes an M.2 adapter for its internal drive bay, and [a photographed L570 spare](https://www.ebay.de/itm/285449995050) is listed with the same marking. The project verified NVMe boot on the VX-2. L560 compatibility and an official FRU mapping for the photographed NEC caddy remain unverified.
 
-The project has confirmed the NVMe caddy approach on the VX-2. The label on the tested NEC caddy has not been matched to the Lenovo FRU, and compatibility of those FRUs with the L560 is not verified.
+![Direct-plug NVMe caddy installed in the VX-2 drive bay](docs/images/vx2-nvme-installed.jpg)
+
+![Removed caddy showing its onboard drive-bay connector](docs/images/vx2-nvme-connector.jpg)
 
 The schematic indexes for [L570 LA-C422P](https://awesomeheader.com/model/lenovo-thinkpad-l570/) and [L560 LA-C421P](https://eletronicabr.com/en/files/file/44855-lenovo-l560-notebook-electrical-schematic-aill1-aill2-and-la-c421p-rev-10-schematic/) identify different PCBs. Prioritize the L570 for a new port based on the VX-2 work. For the L560, use the VX-2 as a reference for SoC bring-up and derive board initialization from the LA-C421P schematic and target firmware. The PCB identifiers alone do not establish shared routing.
 
