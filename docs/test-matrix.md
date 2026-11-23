@@ -22,6 +22,7 @@
 | Sound | ✅ Working | The tester confirmed audio playback. |
 | Ethernet | 🟡 Partially verified | `e1000e` bound. Network traffic remains untested. |
 | TPM 2.0 under Linux | ✅ Detected | `tpm_tis` detected TPM 2.0 via `MSFT0101:00`. Linux created `/dev/tpm0` and `/dev/tpmrm0`. TPM command and measured boot validation are pending. |
+| External VGA | ✅ Working | The tester confirmed video output on the VX-2. |
 
 ## Known failures
 
@@ -52,5 +53,5 @@ The tester confirmed internal AX200 WLAN working after flashing the modified BIO
 - Test actual FireWire I/O and a 16-bit PCMCIA card separately.
 - Retest the bare-board Intel AC 3165 with the WLAN fix. Check WLAN after suspend/resume and test Bluetooth pairing.
 - Validate TPM command execution and measured boot separately. The detection test used `systemd.tpm2_wait=0`.
-- Verify USB SuperSpeed per port, pre-boot USB keyboard, suspend/resume, internal input, Ethernet, external VGA, and battery/charging on the assembled notebook.
+- Verify USB SuperSpeed per port, pre-boot USB keyboard, suspend/resume, internal input, Ethernet, and battery/charging on the assembled notebook.
 - The reference configuration now disables the persistent SPI flash console (`CONFIG_CONSOLE_SPI_FLASH`). Keep CBMEM logging, SPI flash support, and SMMSTORE enabled. The SPI-console-off build still needs hardware validation.
