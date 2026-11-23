@@ -23,7 +23,8 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 | CardBus and PCMCIA | 🟡 Partially verified | A 32-bit FireWire card enumerated and its driver initialized. Transfers and 16-bit PCMCIA are pending. |
 | 64 MiB CardBus prefetchable window | ❌ Fails | Allocation failed. The tested card initialized using smaller windows. |
 | Sound | ✅ Working | The tester confirmed audio playback. |
-| Bluetooth and Ethernet | 🟡 Partially verified | Bluetooth HCI detected and Ethernet driver bound. Pairing and network traffic remain untested. |
+| Bluetooth | ✅ Working | Bluetooth functionality confirmed on the VX-2. |
+| RJ45 Ethernet | ✅ Working | Wired Ethernet functionality confirmed on the VX-2. |
 | Suspend/resume, internal input, battery and charging | 🟡 Needs testing | Hardware validation pending. |
 | TPM 2.0 under Linux | ✅ Detected | `tpm_tis` detected TPM 2.0 via `MSFT0101:00`. Linux created `/dev/tpm0` and `/dev/tpmrm0`. TPM command and measured boot validation are pending. |
 
