@@ -32,7 +32,7 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 - CPU: Intel Core i5-8250U (Kaby Lake-R)
 - iGPU: Intel UHD Graphics 620, PCI ID `8086:5917`
 - EC: Nuvoton NPCE388N
-- SPI firmware: 16 MiB image, external T48 programmer used during testing
+- SPI flash: Winbond W25Q128BV (SOIC-8), 16 MiB. Tested with an external T48 programmer. The `minipro` device name is `W25Q128BV@SOIC8`.
 - Firmware: coreboot build based on the user's coreboot 26.09 development tree, EDK2 MrChromebox payload
 
 ## Build configuration
