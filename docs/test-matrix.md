@@ -12,14 +12,15 @@
 | EDK2 graphical setup (LVGL + NEC OEM GOP) | **PASS** | Graphical Firmware Setup photographed on the test board |
 | USB boot into Ubuntu Live | **PASS** | Booted a USB stick after the USB and PCIe bring-up changes. Per-port SuperSpeed operation remains to be verified. |
 | USB on all five physical ports | **PASS** | The tester confirmed working USB on all five ports. Negotiated SuperSpeed rates were not recorded per port. |
-| USB WLAN | **PASS (connection)** | The D-Link adapter connected after unloading the internal Intel WLAN driver and enabling Wi-Fi in NetworkManager. The internal WLAN issue remains open. |
+| USB WLAN | **PASS (connection)** | The D-Link adapter connected after unloading the internal Intel WLAN driver and enabling Wi-Fi in NetworkManager. |
 | Internal NVMe detection and Linux boot with HAP | **PASS** | Kingston NV2 `2646:501d` at `03:00.0` behind `00:1c.4`. Linux 7.0.0-44 mounted its ext4 root on `nvme0n1p2` and remounted it read/write. |
 | External HDMI/VGA video with OEM GOP | NOT TESTED | No independently confirmed result |
 | UEFI Secure Boot and Ubuntu NVMe boot | **PASS** | `mokutil --sb-state` reported enabled. The kernel confirmed EFI Secure Boot lockdown. Ubuntu booted via `shimx64.efi` with `/` on `nvme0n1p2`. |
 | SD card | **PASS** | The tester confirmed that the card reader works and the SD write test passed. The test log shows a mounted FAT card. Read-back after reinsertion was not separately reported. |
 | 32-bit CardBus | **PASS (enumeration and driver)** | O2Micro `1217:8134` with `yenta_cardbus` enumerated an inserted NEC uPD72870 FireWire card (`1033:00cd`). `firewire_ohci` initialized it and Linux created `fw0` at S400. External FireWire transfer and 16-bit PCMCIA remain untested. |
 | mSATA | **PASS (read)** | Kingston `SNS4151S316G` detected on `ata3` at 6.0 Gbit/s. A 64 MiB read completed while the NVMe was also present. SATA boot and writes remain untested. |
-| M.2 WLAN / Bluetooth | WLAN hardware-blocked | Intel AC 3165 on the test board and AX200 in the assembled VX-2 both report a hardware block under coreboot. The same AX200 works in the assembled unit under NEC firmware. Bluetooth HCI was present and unblocked. |
+| Internal M.2 WLAN (Intel AX200, `8086:2723`) | **PASS** | The tester confirmed working WLAN on the assembled VX-2 after flashing the EC initialization fix. The Intel AC 3165 on the bare board has yet to be retested with the fix. |
+| Bluetooth | HCI detected and unblocked | Observed before the WLAN fix. Pairing and traffic remain untested. |
 | Audio and Ethernet | Drivers bound | `snd_hda_intel` and `e1000e`. Playback and Ethernet traffic remain untested. |
 | TPM 2.0 | **FAIL (Linux device unavailable)** | ACPI advertises TPM2. `/dev/tpm0` and `/dev/tpmrm0` were absent after boot. Both systemd device jobs timed out after about 90 seconds. |
 | Suspend and internal keyboard | NOT TESTED | Pending |
@@ -30,11 +31,19 @@ The earlier trimmed ME configuration did not enumerate the NVMe device. Full tes
 
 The tested variant uses `descriptor_testmb_hap.bin` derived with `me_cleaner -s` from a full ROM with the original test-board ME. The tested build uses that descriptor and the unchanged `me_testmb.bin` with build-time ME cleaning disabled. The original 16 MiB layout is retained, including ME at `0x3000–0x7fffff` and BIOS at `0x800000–0xffffff`. After building, compare the ME region with the input blob and check HAP using `ifdtool -p sklkbl -d`. The HAP setting is confirmed in the descriptor. The ME runtime state still needs independent validation.
 
+## Internal WLAN RF-kill, 2026-11-23
+
+Before the fix, Linux loaded the AX200 firmware and reported a hardware radio block. The port-based EC read at offset `0x3a` returned `0x00`, and the PCH LPC Generic Memory Range register at PCI offset `0x98` read `0x00000000`. Applying the OEM GPD9 pad configuration alone did not clear the block.
+
+The OEM DSDT writes the EC field `DCWL` at MMIO address `0xfe80013a`, bit 5. The tested board code enables the 64 KiB LPC window at `0xfe800000` in bootblock and sets that bit in the EC ACPI `_INI` method while preserving the other bits. The method skips the write if the read returns `0xff`. It uses the OEM enable path without the `WLAC` and `ELNK` policy branches or the OEM `_Q3B` event handler.
+
+The tester confirmed internal AX200 WLAN working after flashing the modified BIOS region. The individual effects of the two firmware changes and the electrical routing of `W_DISABLE1#` were not tested separately.
+
 ## Remaining firmware tests
 
 - The Secure Boot build uses `SMMSTORE=y` and `EDK2_SECURE_BOOT_SUPPORT=y`, with enforcement off by default in the reference configuration. The ROM has a 512 KiB `SMMSTORE` region at `0x810000`, and its descriptor reports HAP set. The Ubuntu test boot confirmed enforcement. Setup-menu behavior and repeated cold-start persistence were not separately logged.
 - The 64 MiB prefetchable CardBus window allocation still fails early. The smaller windows were sufficient for the tested FireWire card's BARs and driver initialization. Test actual FireWire I/O and a 16-bit PCMCIA card separately.
-- Trace the internal WLAN disable signal (`W_DISABLE1#`). The assembled notebook has no physical WLAN switch. Applying the OEM `GPD9` (`SLP_WLAN#`) native pad configuration did not clear the block. Its relationship to `W_DISABLE1#` and the role of the PCH or EC remain unverified. No matching schematic or boardview was found.
+- Retest the bare-board Intel AC 3165 with the WLAN fix. Check WLAN after suspend/resume and test Bluetooth pairing.
 - Check TPM availability on the assembled unit and compare against OEM firmware if still absent. The observed software wait and the underlying TPM detection problem need separate checks.
 - Verify USB SuperSpeed per port, suspend/resume, internal input, audio, Ethernet, external displays, and battery/charging on the assembled notebook.
 - The reference configuration now disables the persistent SPI flash console (`CONFIG_CONSOLE_SPI_FLASH`). Keep CBMEM logging, SPI flash support, and SMMSTORE enabled. The SPI-console-off build still needs hardware validation.

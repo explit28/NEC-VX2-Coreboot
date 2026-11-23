@@ -10,6 +10,7 @@
  * unknown power/reset GPIO outputs.
  */
 #include <bootblock_common.h>
+#include <intelblocks/lpc_lib.h>
 #include <soc/gpio.h>
 
 static const struct pad_config early_gpio_table[] = {
@@ -37,4 +38,5 @@ static const struct pad_config early_gpio_table[] = {
 void bootblock_mainboard_early_init(void)
 {
 	gpio_configure_pads(early_gpio_table, ARRAY_SIZE(early_gpio_table));
+	lpc_open_mmio_window(0xfe800000, 0x10000);
 }

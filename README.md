@@ -1,6 +1,6 @@
 # NEC VersaPro VX-2 — coreboot + EDK2 (experimental port)
 
-**Status (2026-11-23): graphical EDK II setup, USB live boot, and Ubuntu boot from internal NVMe with UEFI Secure Boot confirmed on hardware.** The tested ROM used full original ME firmware and HAP in the flash descriptor. All five USB ports and SD writes worked. The mSATA read and a 32-bit CardBus FireWire card's enumeration and driver initialization also passed. WLAN was detected but hardware-blocked on the bare board. See the [test matrix](docs/test-matrix.md) for verified results and open checks.
+**Status (2026-11-23): graphical EDK II setup, USB live boot, and Ubuntu boot from internal NVMe with UEFI Secure Boot confirmed on hardware.** The tested ROM used full original ME firmware and HAP in the flash descriptor. All five USB ports and SD writes worked. The mSATA read and a 32-bit CardBus FireWire card's enumeration and driver initialization also passed. Internal Intel AX200 WLAN works on the assembled VX-2 with the LPC and EC initialization fix. See the [test matrix](docs/test-matrix.md) for verified results and open checks.
 
 > Experimental, unofficial port. Keep a verified backup of the original SPI flash and a known-recoverable external programmer setup. Do not flash another device's complete image. The bundled snapshot is not necessarily ready to flash without integrating its board-specific configuration and required OEM components.
 
