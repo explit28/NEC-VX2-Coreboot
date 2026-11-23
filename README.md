@@ -49,6 +49,14 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 - SPI flash: Winbond W25Q128BV (SOIC-8), 16 MiB. Tested with an external T48 programmer. The `minipro` device name is `W25Q128BV@SOIC8`.
 - Firmware: coreboot build based on the user's coreboot 26.09 development tree, EDK2 MrChromebox payload
 
+### CardBus, SD reader and serial port
+
+| Interface | Controller or hardware ID | Linux driver and observed status |
+|---|---|---|
+| CardBus / PCMCIA | O2 Micro **OZ600TJ0TN** (package marking on board component `U17`), PCI CardBus bridge `1217:8134`, rev. `06`. Companion PCI function `1217:8150`, rev. `06`, is classified as a mass-storage controller. | `yenta_cardbus` enumerated a 32-bit FireWire card. Transfers and 16-bit PCMCIA remain untested. |
+| SD / MMC | O2 Micro OZ711 SD/MMC Card Reader Controller, PCI `1217:8621`, rev. `01`. | `sdhci-pci`. SD write test passed. |
+| Serial port (COM1) | Legacy 16550A-compatible UART, I/O base `0x3f8`, IRQ `4`, base baud `115200` as reported by Linux. | `serial8250` enumerates `ttyS0`. The physical connector and transmit/receive operation have yet to be verified. |
+
 ## Porting reference for ThinkPad L570 and L560
 
 The NEC VX-2 port can serve as a starting point for a separate **ThinkPad L570** port. The L570's mobile Skylake/Kaby Lake platform is closely related, and it also uses DDR4. The **ThinkPad L560** is another candidate for investigation. Its Skylake platform shares some of the same initialization work, and its DDR3L memory requires a separate RAM initialization configuration. The results in this repository are from the NEC VX-2. Both Lenovo models require their own hardware validation.
@@ -77,14 +85,6 @@ The tested caddy is marked **`AM1SS000100`** on the metal tray. Search for that 
 The schematic indexes for [L570 LA-C422P](https://awesomeheader.com/model/lenovo-thinkpad-l570/) and [L560 LA-C421P](https://eletronicabr.com/en/files/file/44855-lenovo-l560-notebook-electrical-schematic-aill1-aill2-and-la-c421p-rev-10-schematic/) identify different PCBs. Prioritize the L570 for a new port based on the VX-2 work. For the L560, use the VX-2 as a reference for SoC bring-up and derive board initialization from the LA-C421P schematic and target firmware. The PCB identifiers alone do not establish shared routing.
 
 Lenovo references: [ThinkPad L570 platform specifications](https://psref.lenovo.com/syspool/Sys/PDF/ThinkPad/ThinkPad_L570/ThinkPad_L570_Spec.PDF), [ThinkPad L570 model configurations](https://psref.lenovo.com/Product/ThinkPad_L570), [ThinkPad L560 platform specifications](https://psref.lenovo.com/syspool/Sys/PDF/ThinkPad/ThinkPad_L560/ThinkPad_L560_Spec.PDF).
-
-### CardBus, SD reader and serial port
-
-| Interface | Controller or hardware ID | Linux driver and observed status |
-|---|---|---|
-| CardBus / PCMCIA | O2 Micro **OZ600TJ0TN** (package marking on board component `U17`), PCI CardBus bridge `1217:8134`, rev. `06`. Companion PCI function `1217:8150`, rev. `06`, is classified as a mass-storage controller. | `yenta_cardbus` enumerated a 32-bit FireWire card. Transfers and 16-bit PCMCIA remain untested. |
-| SD / MMC | O2 Micro OZ711 SD/MMC Card Reader Controller, PCI `1217:8621`, rev. `01`. | `sdhci-pci`. SD write test passed. |
-| Serial port (COM1) | Legacy 16550A-compatible UART, I/O base `0x3f8`, IRQ `4`, base baud `115200` as reported by Linux. | `serial8250` enumerates `ttyS0`. The physical connector and transmit/receive operation have yet to be verified. |
 
 ## Build configuration
 
