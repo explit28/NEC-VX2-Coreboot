@@ -59,7 +59,6 @@ The tested caddy is marked **`AM1SS000100`** on the metal tray. Search for that 
 
 ![Direct-plug NVMe caddy installed in the VX-2 drive bay](docs/images/vx2-nvme-installed.jpg)
 
-![Removed caddy showing its onboard drive-bay connector](docs/images/vx2-nvme-connector.jpg)
 
 The schematic indexes for [L570 LA-C422P](https://awesomeheader.com/model/lenovo-thinkpad-l570/) and [L560 LA-C421P](https://eletronicabr.com/en/files/file/44855-lenovo-l560-notebook-electrical-schematic-aill1-aill2-and-la-c421p-rev-10-schematic/) identify different PCBs. Prioritize the L570 for a new port based on the VX-2 work. For the L560, use the VX-2 as a reference for SoC bring-up and derive board initialization from the LA-C421P schematic and target firmware. The PCB identifiers alone do not establish shared routing.
 
