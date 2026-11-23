@@ -82,7 +82,7 @@ Lenovo references: [ThinkPad L570 platform specifications](https://psref.lenovo.
 
 | Interface | Controller or hardware ID | Linux driver and observed status |
 |---|---|---|
-| CardBus / PCMCIA | O2 Micro PCI CardBus bridge `1217:8134`, rev. `06`. Companion PCI function `1217:8150`, rev. `06`, is classified as a mass-storage controller. | `yenta_cardbus` enumerated a 32-bit FireWire card. Transfers and 16-bit PCMCIA remain untested. |
+| CardBus / PCMCIA | O2 Micro **OZ600TJ0TN** (package marking on board component `U17`), PCI CardBus bridge `1217:8134`, rev. `06`. Companion PCI function `1217:8150`, rev. `06`, is classified as a mass-storage controller. | `yenta_cardbus` enumerated a 32-bit FireWire card. Transfers and 16-bit PCMCIA remain untested. |
 | SD / MMC | O2 Micro OZ711 SD/MMC Card Reader Controller, PCI `1217:8621`, rev. `01`. | `sdhci-pci`. SD write test passed. |
 | Serial port (COM1) | Legacy 16550A-compatible UART, I/O base `0x3f8`, IRQ `4`, base baud `115200` as reported by Linux. | `serial8250` enumerates `ttyS0`. The physical connector and transmit/receive operation have yet to be verified. |
 
