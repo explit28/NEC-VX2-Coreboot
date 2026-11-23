@@ -9,7 +9,7 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 | Hardware or function | Status | Verified result or open test |
 |---|---|---|
 | Internal display and UEFI | ✅ Working | NEC GOP + VBT, graphical EDK II setup and UEFI Shell. |
-| External HDMI | ❌ Fails | No video output in the tested setup. |
+| External HDMI | ❌ No video | Linux reports `HDMI-A-1` connected and reads a 256-byte EDID after the DDPB GPIO change. The monitor still shows no image. |
 | External VGA | 🟡 Needs testing | Hardware validation pending. |
 | USB | ✅ Working | USB live boot and USB devices on all five ports. |
 | USB SuperSpeed and pre-boot keyboard | 🟡 Needs testing | Verify SuperSpeed on each port and keyboard input before Linux boots. |
@@ -24,7 +24,7 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 | Sound | ✅ Working | The tester confirmed audio playback. |
 | Bluetooth and Ethernet | 🟡 Partially verified | Bluetooth HCI detected and Ethernet driver bound. Pairing and network traffic remain untested. |
 | Suspend/resume, internal input, battery and charging | 🟡 Needs testing | Hardware validation pending. |
-| TPM 2.0 under Linux | ❌ Fails | `/dev/tpm0` and `/dev/tpmrm0` were absent. The systemd device jobs timed out after about 90 seconds. |
+| TPM 2.0 under Linux | ✅ Detected | `tpm_tis` detected TPM 2.0 via `MSFT0101:00`. Linux created `/dev/tpm0` and `/dev/tpmrm0`. TPM command and measured boot validation are pending. |
 
 
 ## Development problems and resolutions
@@ -38,7 +38,7 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 | UEFI Secure Boot support needed a variable store | Enabled SMMSTORE and MrChromebox EDK II Secure Boot support. | **Enforcement confirmed** by Ubuntu booting from NVMe through shim with kernel lockdown active. |
 | Internal WLAN reported a hardware RF-kill block | The OEM GPD9 pad setting alone left the block in place. The fix opens the LPC MMIO window and sets the OEM EC `DCWL` bit during ACPI initialization. | **AX200 confirmed working** on the assembled VX-2. The bare-board AC 3165 needs a retest. |
 | CardBus prefetchable window allocation failed | The smaller windows were sufficient for the tested FireWire card to enumerate and initialize its driver. | **Partial**. The 64 MiB allocation failure remains open, along with transfer testing. |
-| TPM 2.0 devices were absent in Linux | The firmware advertises an ACPI TPM2 table. Linux still reported the two device jobs timing out. | **Open**. No firmware fix has been verified. |
+| TPM 2.0 devices were absent in Linux | Added the coreboot LPC TPM driver node. | **Linux detection restored** via `tpm_tis`. |
 
 ## Hardware / software
 
@@ -61,7 +61,7 @@ The NEC VX-2 port can serve as a starting point for a separate **ThinkPad L570**
 | External display | HDMI fails. VGA remains untested. | VGA and Mini DisplayPort | VGA and Mini DisplayPort |
 | Internal storage | NVMe boot verified with a PCIe adapter in the 2.5-inch drive bay. SATA, mSATA and SATA optical drive operation also confirmed | 2.5-inch SATA or M.2 PCIe NVMe in the same drive bay with a dedicated adapter. Optional M.2 SATA storage in the WWAN slot on some configurations | 2.5-inch SATA HDD, SSD or SSHD configurations listed |
 | Expansion | 32-bit CardBus enumeration verified. Five physical USB ports | Optional ExpressCard/34, four USB ports, ThinkPad dock connector | Optional ExpressCard/34, four USB ports with speeds depending on model, ThinkPad dock connector |
-| TPM | OEM firmware exposed TPM 2.0 via Linux `tpm_tis`. Detection under the tested coreboot build is unresolved | Discrete TPM 2.0 | Lenovo lists discrete TPM 1.2 and chipset firmware TPM 2.0 |
+| TPM | OEM firmware exposed TPM 2.0 via Linux `tpm_tis`. The fixed coreboot build also enumerates it | Discrete TPM 2.0 | Lenovo lists discrete TPM 1.2 and chipset firmware TPM 2.0 |
 
 Reuse the related Intel SoC initialization and the VX-2 bring-up workflow for memory, graphics and PCIe. For each Lenovo board revision, determine the DIMM/SPD configuration, GPIO and PCIe routing, EC interface and ACPI methods, panel configuration, TPM transport, and SPI layout from that target. The VX-2 WLAN fix is a reference for tracing an EC-controlled radio block. Its MMIO address and EC bit are specific to the tested NEC implementation. Use the target's own firmware dump and board-specific components. **Flash the VX-2 image only on the VX-2.**
 
@@ -128,4 +128,4 @@ See [Development notes](docs/development-notes.md), [Test matrix](docs/test-matr
 
 Documentation and original repository helper scripts can be released under a permissive license by the author. Coreboot, EDK2, libgfxinit and OEM components retain their respective licenses. This project is **not affiliated with NEC, Intel, Coreboot or MrChromebox**. Do not assume license rights to redistribute extracted OEM firmware.
 
-The captured config selects EDK2 ref `26.09.1` and configures memory-mapped TPM 2.0. The latest log exposes the ACPI TPM2 table, but Linux TPM device detection remains unresolved. The board directory was untracked in the source checkout. Other local changes and exact submodule revisions were not captured. This archive has not been independently rebuilt.
+The captured config selects EDK2 ref `26.09.1` and configures memory-mapped TPM 2.0. The fixed build enumerates TPM 2.0 through the Linux TIS driver. The board directory was untracked in the source checkout. Other local changes and exact submodule revisions were not captured. This archive has not been independently rebuilt.

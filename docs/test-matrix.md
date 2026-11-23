@@ -21,13 +21,13 @@
 | Bluetooth | 🟡 Partially verified | HCI detected and unblocked. Observed before the WLAN fix. Pairing and traffic remain untested. |
 | Sound | ✅ Working | The tester confirmed audio playback. |
 | Ethernet | 🟡 Partially verified | `e1000e` bound. Network traffic remains untested. |
+| TPM 2.0 under Linux | ✅ Detected | `tpm_tis` detected TPM 2.0 via `MSFT0101:00`. Linux created `/dev/tpm0` and `/dev/tpmrm0`. TPM command and measured boot validation are pending. |
 
 ## Known failures
 
 | Function | Status | Observed result |
 |---|---|---|
-| External HDMI | ❌ Fails | The tester reported no video output. |
-| TPM 2.0 under Linux | ❌ Fails | The ACPI TPM2 table was present. `/dev/tpm0` and `/dev/tpmrm0` were absent, and both systemd device jobs timed out after about 90 seconds. |
+| External HDMI | ❌ No video | Linux reports `HDMI-A-1` connected and reads a 256-byte EDID after the DDPB GPIO change. The monitor still shows no image. |
 | 64 MiB prefetchable CardBus window | ❌ Fails | Allocation failed. Smaller windows were sufficient for the tested FireWire card's BARs and driver initialization. |
 
 See the [development problem table](../README.md#development-problems-and-resolutions) for the failed graphics approaches and the changes that restored functionality.
@@ -51,6 +51,6 @@ The tester confirmed internal AX200 WLAN working after flashing the modified BIO
 - The Secure Boot build uses `SMMSTORE=y` and `EDK2_SECURE_BOOT_SUPPORT=y`, with enforcement off by default in the reference configuration. The ROM has a 512 KiB `SMMSTORE` region at `0x810000`, and its descriptor reports HAP set. The Ubuntu test boot confirmed enforcement. Setup-menu behavior and repeated cold-start persistence were not separately logged.
 - Test actual FireWire I/O and a 16-bit PCMCIA card separately.
 - Retest the bare-board Intel AC 3165 with the WLAN fix. Check WLAN after suspend/resume and test Bluetooth pairing.
-- Check TPM availability on the assembled unit and compare against OEM firmware if still absent. The observed software wait and the underlying TPM detection problem need separate checks.
+- Validate TPM command execution and measured boot separately. The detection test used `systemd.tpm2_wait=0`.
 - Verify USB SuperSpeed per port, pre-boot USB keyboard, suspend/resume, internal input, Ethernet, external VGA, and battery/charging on the assembled notebook.
 - The reference configuration now disables the persistent SPI flash console (`CONFIG_CONSOLE_SPI_FLASH`). Keep CBMEM logging, SPI flash support, and SMMSTORE enabled. The SPI-console-off build still needs hardware validation.

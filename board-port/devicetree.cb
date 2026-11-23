@@ -22,6 +22,9 @@ chip soc/intel/skylake
 		device ref lpc_espi on
 			register "serirq_mode" = "SERIRQ_CONTINUOUS"
 			register "lpc_ioe" = "LPC_IOE_EC_62_66 | LPC_IOE_KBC_60_64 | LPC_IOE_COMA_EN"
+			chip drivers/pc80/tpm
+				device pnp 0c31.0 on end
+			end
 		end
 		device ref hda on end
 		device ref smbus on end
