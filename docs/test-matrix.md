@@ -20,7 +20,8 @@
 | SATA | ✅ Working | Confirmed on the VX-2 by the tester. |
 | mSATA | ✅ Working | Confirmed by the tester. Earlier logs recorded a 64 MiB read from the Kingston `SNS4151S316G` at 6.0 Gbit/s. |
 | SATA optical drive | ✅ Working | Confirmed on the VX-2 by the tester. |
-| Internal M.2 WLAN (Intel AX200, `8086:2723`) | ✅ Working | The tester confirmed working WLAN on the assembled VX-2 after flashing the EC initialization fix. The Intel AC 3165 on the bare board has yet to be retested with the fix. |
+| Internal WLAN | ✅ Working | Tested with a retrofitted Intel AX200. The VX-2 typically shipped with an Intel 8xxx-series WLAN card. |
+| Internal WLAN after resume | ✅ Working | WLAN works after resuming from suspend with the retrofitted Intel AX200. |
 | Bluetooth | ✅ Working | Bluetooth functionality confirmed on the VX-2. |
 | Sound | ✅ Working | The tester confirmed audio playback. |
 | RJ45 Ethernet | ✅ Working | Wired Ethernet functionality confirmed on the VX-2. |
@@ -52,13 +53,13 @@ Before the fix, Linux loaded the AX200 firmware and reported a hardware radio bl
 
 The OEM DSDT writes the EC field `DCWL` at MMIO address `0xfe80013a`, bit 5. The tested board code enables the 64 KiB LPC window at `0xfe800000` in bootblock and sets that bit in the EC ACPI `_INI` method while preserving the other bits. The method skips the write if the read returns `0xff`. It uses the OEM enable path without the `WLAC` and `ELNK` policy branches or the OEM `_Q3B` event handler.
 
-The tester confirmed internal AX200 WLAN working after flashing the modified BIOS region. The individual effects of the two firmware changes and the electrical routing of `W_DISABLE1#` were not tested separately.
+The tester confirmed that internal WLAN works with the retrofitted AX200 after flashing the modified BIOS region. WLAN also works after resume. The individual effects of the two firmware changes and the electrical routing of `W_DISABLE1#` were not tested separately.
 
 ## 🟡 Remaining firmware tests
 
 - The Secure Boot build uses `SMMSTORE=y` and `EDK2_SECURE_BOOT_SUPPORT=y`, with enforcement off by default in the reference configuration. The ROM has a 512 KiB `SMMSTORE` region at `0x810000`, and its descriptor reports HAP set. The Ubuntu test boot confirmed enforcement. Setup-menu behavior and repeated cold-start persistence were not separately logged.
 - Test actual FireWire I/O and a 16-bit PCMCIA card separately.
-- Retest the bare-board Intel AC 3165 with the WLAN fix. Check WLAN after suspend/resume and test Bluetooth pairing.
+- Test Bluetooth pairing separately.
 - Validate TPM command execution and measured boot separately. The detection test used `systemd.tpm2_wait=0`.
 - Record the negotiated SuperSpeed rate for each port.
 - The reference configuration now disables the persistent SPI flash console (`CONFIG_CONSOLE_SPI_FLASH`). Keep CBMEM logging, SPI flash support, and SMMSTORE enabled. The SPI-console-off build still needs hardware validation.
