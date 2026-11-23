@@ -44,11 +44,19 @@ The NEC VX-2 port can serve as a starting point for a separate **ThinkPad L570**
 | CPU and integrated graphics | Core i5-8250U (Kaby Lake-R, 4 cores), UHD 620 | Skylake or Kaby Lake variants, HD 520, 610 or 620 | Skylake variants, HD 510 or 520 |
 | Memory | DDR4 | Two DDR4 SO-DIMM slots | Two DDR3L SO-DIMM slots |
 | External display | VGA and HDMI, functional tests pending | VGA and Mini DisplayPort | VGA and Mini DisplayPort |
-| Internal storage | NVMe boot and mSATA reads verified | 2.5-inch SATA or factory PCIe NVMe options. Optional M.2 SATA storage in the WWAN slot on some configurations | 2.5-inch SATA HDD, SSD or SSHD configurations listed |
+| Internal storage | NVMe boot verified with a PCIe adapter in the 2.5-inch drive bay. mSATA reads also verified | 2.5-inch SATA or M.2 PCIe NVMe in the same drive bay with a dedicated adapter. Optional M.2 SATA storage in the WWAN slot on some configurations | 2.5-inch SATA HDD, SSD or SSHD configurations listed |
 | Expansion | 32-bit CardBus enumeration verified. Five physical USB ports | Optional ExpressCard/34, four USB ports, ThinkPad dock connector | Optional ExpressCard/34, four USB ports with speeds depending on model, ThinkPad dock connector |
 | TPM | OEM firmware exposed TPM 2.0 via Linux `tpm_tis`. Detection under the tested coreboot build is unresolved | Discrete TPM 2.0 | Lenovo lists discrete TPM 1.2 and chipset firmware TPM 2.0 |
 
 Reuse the related Intel SoC initialization and the VX-2 bring-up workflow for memory, graphics and PCIe. For each Lenovo board revision, determine the DIMM/SPD configuration, GPIO and PCIe routing, EC interface and ACPI methods, panel configuration, TPM transport, and SPI layout from that target. The VX-2 WLAN fix is a reference for tracing an EC-controlled radio block. Its MMIO address and EC bit are specific to the tested NEC implementation. Use the target's own firmware dump and board-specific components. **Flash the VX-2 image only on the VX-2.**
+
+### NVMe adapter for the 2.5-inch drive bay
+
+The tested VX-2 boots NVMe through a dedicated caddy connected to the PCIe-capable drive-bay connector. The drive bay also accepts SATA storage. The caddy carries PCIe signals to an M.2 NVMe SSD.
+
+For the ThinkPad L570, Lenovo calls the part the **M.2 solid-state drive adapter in the internal-storage-drive bay**. The [L570 service manual](https://download.lenovo.com/pccbbs/mobiles_pdf/l570_hmm_en_sp40k88826_02.pdf) shows the adapter. [Drive Solutions' L570 parts reference](https://drivesolutions.com/upgrade/model/view/id/440900/) identifies **01AY477** as the M.2 2280 NVMe adapter and **01LW340** as its cable. The **01LW339** cable is for the SATA drive configuration.
+
+The project has confirmed the NVMe caddy approach on the VX-2. The label on the tested NEC caddy has not been matched to the Lenovo FRU, and compatibility of those FRUs with the L560 is not verified.
 
 Lenovo references: [ThinkPad L570 platform specifications](https://psref.lenovo.com/syspool/Sys/PDF/ThinkPad/ThinkPad_L570/ThinkPad_L570_Spec.PDF), [ThinkPad L570 model configurations](https://psref.lenovo.com/Product/ThinkPad_L570), [ThinkPad L560 platform specifications](https://psref.lenovo.com/syspool/Sys/PDF/ThinkPad/ThinkPad_L560/ThinkPad_L560_Spec.PDF).
 
