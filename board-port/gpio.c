@@ -8,6 +8,10 @@
 #include "gpio.h"
 
 static const struct pad_config nec_late_gpio_table[] = {
+	/* SLP_WLAN#: match the NEC factory pad configuration. */
+	_PAD_CFG_STRUCT(GPD9, PAD_FUNC(NF1) | PAD_TRIG(OFF) |
+		PAD_BUF(RX_DISABLE), 0),
+
 	/* OEM NEC native-function display pads; T480/T480s/T580 use same pads. */
 	/* DDPB_HPD */
 	_PAD_CFG_STRUCT(GPP_E13, 0x84000500, 0x00000025),

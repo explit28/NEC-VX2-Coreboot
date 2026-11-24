@@ -2,7 +2,7 @@
 /*
  * NEC stock ECDT (TP-N28): EC at \_SB.PCI0.LPCB.EC,
  * command/status port 0x66, data port 0x62, GPE 0x50.
- * Other EC fields, battery, thermal and vendor SMI methods are not yet ported.
+ * EC fields, battery, thermal and vendor SMI methods are not yet ported.
  * Included automatically by src/soc/intel/skylake/acpi/lpc.asl.
  */
 Device (EC)
@@ -11,7 +11,7 @@ Device (EC)
 	Name (_UID, 0)
 	Name (_GPE, 0x50)
 
-	/* Set the OEM DCWL bit to enable internal WLAN. */
+	/* Experimental WLAN initialization based on the OEM DCWL field. */
 	OperationRegion (WLER, SystemMemory, 0xFE80013A, 1)
 	Field (WLER, ByteAcc, NoLock, Preserve)
 	{
@@ -26,7 +26,6 @@ Device (EC)
 			Or (Local0, 0x20, WLRG)
 		}
 	}
-
 	Name (_CRS, ResourceTemplate ()
 	{
 		IO (Decode16, 0x62, 0x62, 0x01, 0x01)
