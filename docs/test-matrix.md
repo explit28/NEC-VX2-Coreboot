@@ -16,7 +16,7 @@
 | UEFI Secure Boot and Ubuntu NVMe boot | ✅ Working | `mokutil --sb-state` reported enabled. The kernel confirmed EFI Secure Boot lockdown. Ubuntu booted via `shimx64.efi` with `/` on `nvme0n1p2`. |
 | Windows 11 with Secure Boot | ✅ Working | The tester confirmed Windows 11 boots on the VX-2 with coreboot and UEFI Secure Boot enabled. |
 | Secure Boot persistence | ✅ Working | Secure Boot settings persist across restarts. |
-| SD card | ⚠️ Linux only | The SD write test passed under Linux. The reader does not work under Windows. |
+| SD card | ✅ Working under Linux | The SD write test passed under Linux. The reader does not work under Windows. |
 | 32-bit CardBus | ✅ Working under Linux | USB CardBus works under Linux. O2Micro `1217:8134` with `yenta_cardbus` enumerated a NEC uPD72870 FireWire card (`1033:00cd`); external FireWire transfers remain untested. Windows reports Code 31. |
 | 16-bit PCMCIA | ✅ Working under Linux | 16-bit PCMCIA operation confirmed under Linux. Windows operation remains unverified. |
 | SATA | ✅ Working | Confirmed on the VX-2 by the tester. |
