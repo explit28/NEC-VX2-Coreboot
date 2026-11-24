@@ -43,6 +43,10 @@
 
 See the [development problem table](../README.md#development-problems-and-resolutions) for the failed graphics approaches and the changes that restored functionality.
 
+## HDMI GPIO test, 2026-11-24
+
+The OEM GPIO snapshot reports GPP_E12 and GPP_E15 as output-high pads (DW0 `0x84000201`), whereas the running coreboot dump showed `0x44000300` for both. A test build configured both with `PAD_CFG_GPO(..., 1, PLTRST)`. The first review-checkout image displayed the TianoCore logo and hung on startup; it was not a valid HDMI test. A subsequent test using the original working development checkout booted, but HDMI still produced no image. The two pad changes did not resolve the issue; their electrical purpose remains unknown. Reverting these experimental changes is recommended. Next investigation: compare the active Intel display state and HDMI signal path against stock firmware with the same monitor and mode.
+
 ## NVMe and Intel ME, 2026-11-22
 
 The earlier trimmed ME configuration did not enumerate the NVMe device. Full test-board ME with HAP clear restored enumeration. The latest test with full ME and HAP set also reached the installed Linux system on the NVMe. The earlier reboot loop has no confirmed root cause.
