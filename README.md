@@ -1,6 +1,12 @@
 # NEC VersaPro VX-2 — coreboot + EDK2 (experimental port)
 
-> Experimental, unofficial port. Keep a verified backup of the original SPI flash and a known-recoverable external programmer setup. Do not flash another device's complete image. The bundled snapshot is not necessarily ready to flash without integrating its board-specific configuration and required OEM components.
+> Experimental port submitted for [upstream coreboot review (#97596)](https://review.coreboot.org/c/coreboot/+/97596). Keep a verified backup of the original SPI flash and a known-recoverable external programmer setup. Do not flash another device's complete image. The bundled snapshot is not necessarily ready to flash without integrating its board-specific configuration and required OEM components.
+
+## Screenshots
+
+![NEC VersaPro VX-2 displaying the coreboot logo](docs/images/NEC_VersaPro_VX-2_Coreboot.jpg)
+
+![NEC VersaPro VX-2 EDK2 boot manager](docs/images/NEC_VersaPro_VX-2_Coreboot_Bootmanager.jpg)
 
 ## Hardware test status
 
