@@ -27,7 +27,8 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 | Internal WLAN | ✅ Working | Tested with a retrofitted Intel AX200. The VX-2 typically shipped with an Intel 8xxx-series WLAN card. |
 | Internal WLAN after resume | ✅ Working | WLAN works after resuming from suspend with the retrofitted Intel AX200. |
 | SATA, mSATA and SATA optical drive | ✅ Working | The tester confirmed operation on the VX-2. |
-| CardBus and PCMCIA | 🟡 Partially verified | A 32-bit FireWire card enumerated and its driver initialized. Transfers and 16-bit PCMCIA are pending. |
+| 32-bit CardBus | ⚠️ Linux only | USB CardBus works under Linux. FireWire enumeration confirmed; external FireWire transfers remain untested. Windows reports Code 31. |
+| 16-bit PCMCIA | ✅ Working under Linux | 16-bit PCMCIA operation confirmed under Linux. Windows operation remains unverified. |
 | 64 MiB CardBus prefetchable window | ❌ Fails | Allocation failed. The tested card initialized using smaller windows. |
 | Sound | ✅ Working | The tester confirmed audio playback. |
 | Bluetooth | ✅ Working | Bluetooth functionality confirmed on the VX-2. |
@@ -65,7 +66,7 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 
 | Interface | Controller or hardware ID | Linux driver and observed status |
 |---|---|---|
-| CardBus / PCMCIA | O2 Micro **OZ600TJ0TN** (package marking on board component `U17`), PCI CardBus bridge `1217:8134`, rev. `06`. Companion PCI function `1217:8150`, rev. `06`, is classified as a mass-storage controller. | `yenta_cardbus` enumerated a 32-bit FireWire card. Transfers and 16-bit PCMCIA remain untested. |
+| CardBus / PCMCIA | O2 Micro **OZ600TJ0TN** (package marking on board component `U17`), PCI CardBus bridge `1217:8134`, rev. `06`. Companion PCI function `1217:8150`, rev. `06`, is classified as a mass-storage controller. | `yenta_cardbus` enumerated a 32-bit FireWire card. USB CardBus and 16-bit PCMCIA work under Linux. FireWire transfers remain untested. Windows CardBus reports Code 31. |
 | SD / MMC | O2 Micro SD/MMC reader, PCI `1217:8621`, rev. `01`. Listed as `OZ711` in the PCI ID database. The exact chip marking and variant are unverified. | `sdhci-pci`. SD write test passed. |
 | Serial port (COM1) | Legacy 16550A-compatible UART, I/O base `0x3f8`, IRQ `4`, base baud `115200` as reported by Linux. | `serial8250` enumerates `ttyS0`. The physical connector and transmit/receive operation have yet to be verified. |
 
@@ -77,10 +78,10 @@ The NEC VX-2 port can serve as a starting point for a separate **ThinkPad L570**
 |---|---|---|---|
 | Compal PCB | `LA-C423P` on the tested unit | `LA-C422P` (CILL1/CILL2) | `LA-C421P` (AILL1/AILL2) |
 | CPU and integrated graphics | Core i5-8250U (Kaby Lake-R, 4 cores), UHD 620 | Skylake or Kaby Lake variants, HD 520, 610 or 620 | Skylake variants, HD 510 or 520 |
-| Memory | DDR4 | Two DDR4 SO-DIMM slots | Two DDR3L SO-DIMM slots |
+| Memory | Two DDR4 SO-DIMM slots | Two DDR4 SO-DIMM slots | Two DDR3L SO-DIMM slots |
 | External display | External VGA works. HDMI detects the monitor but shows no image. | VGA and Mini DisplayPort | VGA and Mini DisplayPort |
 | Internal storage | NVMe boot verified with a PCIe adapter in the 2.5-inch drive bay. SATA, mSATA and SATA optical drive operation also confirmed | 2.5-inch SATA or M.2 PCIe NVMe in the same drive bay with a dedicated adapter. Optional M.2 SATA storage in the WWAN slot on some configurations | 2.5-inch SATA HDD, SSD or SSHD configurations listed |
-| Expansion | 32-bit CardBus enumeration verified. Five physical USB ports | Optional ExpressCard/34, four USB ports, ThinkPad dock connector | Optional ExpressCard/34, four USB ports with speeds depending on model, ThinkPad dock connector |
+| Expansion | 32-bit CardBus and 16-bit PCMCIA confirmed working under Linux. Five physical USB ports | Optional ExpressCard/34, four USB ports, ThinkPad dock connector | Optional ExpressCard/34, four USB ports with speeds depending on model, ThinkPad dock connector |
 | TPM | OEM firmware exposed TPM 2.0 via Linux `tpm_tis`. The fixed coreboot build also enumerates it | Discrete TPM 2.0 | Lenovo lists discrete TPM 1.2 and chipset firmware TPM 2.0 |
 
 Reuse the related Intel SoC initialization and the VX-2 bring-up workflow for memory, graphics and PCIe. For each Lenovo board revision, determine the DIMM/SPD configuration, GPIO and PCIe routing, EC interface and ACPI methods, panel configuration, TPM transport, and SPI layout from that target. The VX-2 WLAN fix is a reference for tracing an EC-controlled radio block. Its MMIO address and EC bit are specific to the tested NEC implementation. Use the target's own firmware dump and board-specific components. **Flash the VX-2 image only on the VX-2.**
