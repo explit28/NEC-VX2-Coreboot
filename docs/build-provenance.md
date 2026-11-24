@@ -11,3 +11,13 @@ Working tree status at snapshot time:
 ```
 
 Files copied: board source files and complete `.config` only. OEM binaries excluded.
+
+
+## Known-good ROM capture, 2026-11-24
+
+- Configuration: extracted directly from `build/coreboot-known-good.rom`; published as `config/coreboot.config` with the device serial number cleared.
+- Observed coreboot checkout: `8b0e34f90e08547cf19e550a43ed72f69c39d6ed`.
+- Configured EDK2 ref: `26.09.1` (MrChromebox).
+- Observed EDK2 checkout: `57642656c3ddc5d55aeb2e8c3fb86c81276da4a7`.
+- Current recursive submodule revisions: [submodules.txt](submodules.txt). These were collected from the checkout, not independently recovered from the ROM.
+- Board source snapshot synchronized from the original development checkout. Local graphics diagnostics outside the board directory and EDK2 workspace changes have not been captured in this snapshot. Exact binary reproducibility is not established. OEM binaries remain local.

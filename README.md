@@ -101,7 +101,7 @@ Lenovo references: [ThinkPad L570 platform specifications](https://psref.lenovo.
 
 ## Build configuration
 
-The reference configuration enables LVGL and uses the original 16 MiB SPI layout with an 8 MiB BIOS region. It incorporates the verified HAP descriptor path, full ME input, SMMSTORE, and EDK II Secure Boot support. Secure Boot starts disabled by default and can be enabled in setup. The reference was updated from confirmed settings in the test build. A fresh full `.config` export of that build is still pending. The reference disables persistent SPI console logging and keeps CBMEM logging and SMMSTORE enabled.
+The reference configuration enables LVGL and uses the original 16 MiB SPI layout with an 8 MiB BIOS region. It incorporates the verified HAP descriptor path, full ME input, SMMSTORE, and EDK II Secure Boot support. Secure Boot starts disabled by default and can be enabled in setup. The reference was updated from confirmed settings in the test build. The full configuration was extracted from the known-good ROM on 2026-11-24. See [build provenance](docs/build-provenance.md). The reference disables persistent SPI console logging and keeps CBMEM logging and SMMSTORE enabled.
 
 The following combination was confirmed to show the **coreboot logo through EDK2**, followed by a functional UEFI Shell:
 
@@ -116,7 +116,7 @@ CONFIG_EDK2_GOP_FILE="3rdparty/blobs/mainboard/nec/vx-2/IntelGopDriver.efi"
 CONFIG_INTEL_GMA_VBT_FILE="3rdparty/blobs/mainboard/nec/vx-2/IntelGopVbt.bin"
 ```
 
-These settings should be understood as a **verified subset**, not a complete reproducible `.config`; the captured configuration is included in `config/coreboot.config` with the device serial number cleared.
+The full tested configuration is included in `config/coreboot.config` with the device serial number cleared.
 
 EDK2 uses coreboot’s bundled logo (`Documentation/coreboot_logo.bmp`) in the reference configuration.
 
@@ -149,4 +149,4 @@ See [Development notes](docs/development-notes.md), [Test matrix](docs/test-matr
 
 Documentation and original repository helper scripts can be released under a permissive license by the author. Coreboot, EDK2, libgfxinit and OEM components retain their respective licenses. This project is **not affiliated with NEC, Intel, Coreboot or MrChromebox**. Do not assume license rights to redistribute extracted OEM firmware.
 
-The captured config selects EDK2 ref `26.09.1` and configures memory-mapped TPM 2.0. The fixed build enumerates TPM 2.0 through the Linux TIS driver. The board directory was untracked in the source checkout. Other local changes and exact submodule revisions were not captured. This archive has not been independently rebuilt.
+The captured config selects EDK2 ref `26.09.1` (observed checkout commit `57642656c3ddc5d55aeb2e8c3fb86c81276da4a7`) and configures memory-mapped TPM 2.0. The fixed build enumerates TPM 2.0 through the Linux TIS driver. The board directory was untracked in the source checkout. The current checkout's exact submodule revisions are recorded in `docs/submodules.txt`. Local changes outside the board sources and EDK2 workspace state may still affect reproducibility. This archive has not been independently rebuilt.
