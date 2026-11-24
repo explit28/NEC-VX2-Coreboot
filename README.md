@@ -23,7 +23,7 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 | Internal NVMe and Secure Boot | ✅ Working | Ubuntu booted from NVMe with Secure Boot enabled. |
 | Windows 11 with Secure Boot | ✅ Working | The tester confirmed Windows 11 boots on the VX-2 with coreboot and UEFI Secure Boot enabled. |
 | Secure Boot persistence | ✅ Working | Secure Boot settings persist across restarts. |
-| SD reader | ⚠️ Linux only | The SD write test passed under Linux. The reader does not work under Windows. |
+| SD reader | ✅ Working under Linux | The SD write test passed under Linux. The reader does not work under Windows. |
 | Internal WLAN | ✅ Working | Tested with a retrofitted Intel AX200. The VX-2 typically shipped with an Intel 8xxx-series WLAN card. |
 | Internal WLAN after resume | ✅ Working | WLAN works after resuming from suspend with the retrofitted Intel AX200. |
 | SATA, mSATA and SATA optical drive | ✅ Working | The tester confirmed operation on the VX-2. |
