@@ -61,6 +61,12 @@ The OEM DSDT writes the EC field `DCWL` at MMIO address `0xfe80013a`, bit 5. The
 
 The tester confirmed that internal WLAN works with the retrofitted AX200 after flashing the modified BIOS region. WLAN also works after resume. The individual effects of the two firmware changes and the electrical routing of `W_DISABLE1#` were not tested separately.
 
+## Imaging unit and O2Micro tests, 2026-11-24
+
+The tested notebook has no exposed camera; the display bezel covers the possible camera position. Whether a connector is fitted remains unverified. The Intel Imaging Unit (`8086:1919`, `00:05.0`) appears as an unknown multimedia controller under Windows and is absent from the OEM PCI inventory. The next build should disable the unused imaging unit; the Skylake chipset tree already defaults `imgu` to off and the FSP-S code derives `SaImguEnable` from that device state. Verify the effective state and PCI enumeration before claiming a fix.
+
+The CardBus and SD reader subsystem-ID experiment requested `17aa:60cd` for both controllers. CBMEM shows that coreboot attempted both writes, but Linux still reports `1217:0002`. Windows shows no improvement. The reason the values remain unchanged is unconfirmed. Keep this experiment out of the release baseline.
+
 ## 🟡 Remaining firmware tests
 
 - The Secure Boot build uses `SMMSTORE=y` and `EDK2_SECURE_BOOT_SUPPORT=y`, with enforcement off by default in the reference configuration. The ROM has a 512 KiB `SMMSTORE` region at `0x810000`, and its descriptor reports HAP set. The Ubuntu test boot confirmed enforcement.
