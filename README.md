@@ -23,12 +23,12 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 | Internal NVMe and Secure Boot | ✅ Working | Ubuntu booted from NVMe with Secure Boot enabled. |
 | Windows 11 with Secure Boot | ✅ Working | The tester confirmed Windows 11 boots on the VX-2 with coreboot and UEFI Secure Boot enabled. |
 | Secure Boot persistence | ✅ Working | Secure Boot settings persist across restarts. |
-| SD reader | ✅ Working under Linux | The SD write test passed under Linux. The reader does not work under Windows. |
+| SD reader | ✅ Working under Linux | The SD write test passed under Linux. Does not (yet) work under Windows. |
 | Internal WLAN | ✅ Working | Tested with a retrofitted Intel AX200. The VX-2 typically shipped with an Intel 8xxx-series WLAN card. |
 | Internal WLAN after resume | ✅ Working | WLAN works after resuming from suspend with the retrofitted Intel AX200. |
 | SATA, mSATA and SATA optical drive | ✅ Working | The tester confirmed operation on the VX-2. |
-| 32-bit CardBus | ✅ Working under Linux | USB CardBus works under Linux. FireWire enumeration confirmed; external FireWire transfers remain untested. Windows reports Code 31. |
-| 16-bit PCMCIA | ✅ Working under Linux | 16-bit PCMCIA operation confirmed under Linux. Windows operation remains unverified. |
+| 32-bit CardBus | ✅ Working under Linux | USB CardBus works under Linux. FireWire enumeration confirmed; external FireWire transfers remain untested. Does not (yet) work under Windows. |
+| 16-bit PCMCIA | ✅ Working under Linux | 16-bit PCMCIA operation confirmed under Linux. Does not (yet) work under Windows. |
 | 64 MiB CardBus prefetchable window | ❌ Fails | Allocation failed. The tested card initialized using smaller windows. |
 | Sound | ✅ Working | The tester confirmed audio playback. |
 | Bluetooth | ✅ Working | Bluetooth functionality confirmed on the VX-2. |
