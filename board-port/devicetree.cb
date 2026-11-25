@@ -36,6 +36,7 @@ chip soc/intel/skylake
             }"
         end
 		device ref sa_thermal on end
+		device ref imgu off end
 		device ref thermal on end
 		# CLKREQ routing from the OEM FIA dump. CLKOUT_SRC numbers assume
 		# the Intel ICC default mapping and need hardware verification.
@@ -59,6 +60,7 @@ chip soc/intel/skylake
 			register "PcieRpClkSrcNumber[4]" = "5"
 		end
 		# SD card reader
+		device ref pcie_rp9 on end
 		device ref pcie_rp12 on
 			register "PcieRpClkReqSupport[11]" = "true"
 			register "PcieRpClkReqNumber[11]" = "2"

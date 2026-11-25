@@ -1,7 +1,79 @@
+diff --git a/src/device/cardbus_device.c b/src/device/cardbus_device.c
+index 2eb070e7e1..876a001878 100644
+--- a/src/device/cardbus_device.c
++++ b/src/device/cardbus_device.c
+@@ -82,11 +82,15 @@ void cardbus_read_resources(struct device *dev)
+ 	cardbus_record_bridge_resource(dev, moving, CARDBUS_IO_SIZE,
+ 				       PCI_CB_IO_BASE_1, IORESOURCE_IO);
+ 
+-	/* If I can, enable prefetch for mem0. */
++	/* Match the OEM CardBus window order on the NEC VersaPro VX-2. */
+ 	ctl = pci_read_config16(dev, PCI_CB_BRIDGE_CONTROL);
+ 	ctl &= ~PCI_CB_BRIDGE_CTL_PREFETCH_MEM0;
+ 	ctl &= ~PCI_CB_BRIDGE_CTL_PREFETCH_MEM1;
+-	ctl |= PCI_CB_BRIDGE_CTL_PREFETCH_MEM0;
++	if (CONFIG(BOARD_NEC_VERSAPRO_VX2) &&
++	    dev->vendor == 0x1217 && dev->device == 0x8134)
++		ctl |= PCI_CB_BRIDGE_CTL_PREFETCH_MEM1;
++	else
++		ctl |= PCI_CB_BRIDGE_CTL_PREFETCH_MEM0;
+ 	pci_write_config16(dev, PCI_CB_BRIDGE_CONTROL, ctl);
+ 	ctl = pci_read_config16(dev, PCI_CB_BRIDGE_CONTROL);
+ 
+@@ -108,8 +112,11 @@ void cardbus_read_resources(struct device *dev)
+ 	moving = moving_base & moving_limit;
+ 
+ 	/* Initialize the memory space constraints on the current bus. */
++	type = IORESOURCE_MEM;
++	if (ctl & PCI_CB_BRIDGE_CTL_PREFETCH_MEM1)
++		type |= IORESOURCE_PREFETCH;
+ 	cardbus_record_bridge_resource(dev, moving, CARDBUS_MEM_SIZE,
+-				       PCI_CB_MEMORY_BASE_1, IORESOURCE_MEM);
++				       PCI_CB_MEMORY_BASE_1, type);
+ 
+ 	compact_resources(dev);
+ }
+@@ -131,9 +138,34 @@ void cardbus_enable_resources(struct device *dev)
+ 	pci_dev_enable_resources(dev);
+ }
+ 
++static void cardbus_set_resources(struct device *dev)
++{
++	static const unsigned int window_bases[] = {
++		PCI_CB_MEMORY_BASE_0,
++		PCI_CB_MEMORY_BASE_1,
++		PCI_CB_IO_BASE_0,
++		PCI_CB_IO_BASE_1,
++	};
++
++	pci_dev_set_resources(dev);
++
++	if (!CONFIG(BOARD_NEC_VERSAPRO_VX2) ||
++	    dev->vendor != 0x1217 || dev->device != 0x8134)
++		return;
++
++	for (unsigned int i = 0; i < ARRAY_SIZE(window_bases); i++) {
++		const struct resource *res = probe_resource(dev, window_bases[i]);
++
++		if (!res || !res->size || !(res->flags & IORESOURCE_STORED))
++			continue;
++
++		pci_write_config32(dev, window_bases[i] + 4, resource_end(res));
++	}
++}
++
+ struct device_operations default_cardbus_ops_bus = {
+ 	.read_resources   = cardbus_read_resources,
+-	.set_resources    = pci_dev_set_resources,
++	.set_resources    = cardbus_set_resources,
+ 	.enable_resources = cardbus_enable_resources,
+ 	.scan_bus         = pci_scan_bridge,
+ 	.reset_bus        = pci_bus_reset,
 diff --git a/src/device/pci_device.c b/src/device/pci_device.c
+index 67088139a2..373f81938f 100644
 --- a/src/device/pci_device.c
 +++ b/src/device/pci_device.c
-@@ -1486,6 +1486,13 @@
+@@ -1487,6 +1487,13 @@ static void pci_bridge_route(struct bus *link, scan_state state)
  
  	if (state == PCI_ROUTE_SCAN) {
  		link->secondary = parent->subordinate + 1;
@@ -15,47 +87,3 @@ diff --git a/src/device/pci_device.c b/src/device/pci_device.c
  		link->subordinate = link->secondary + dev->hotplug_buses;
  		link->max_subordinate = parent->max_subordinate
  						? parent->max_subordinate
-diff --git a/src/mainboard/nec/versapro_vx2/ramstage.c b/src/mainboard/nec/versapro_vx2/ramstage.c
---- a/src/mainboard/nec/versapro_vx2/ramstage.c
-+++ b/src/mainboard/nec/versapro_vx2/ramstage.c
-@@ -1,5 +1,7 @@
- /* SPDX-License-Identifier: GPL-2.0-only */
- /* NEC VersaPro VX-2: pre-FSP-S GPIO hook. */
-+#include <bootstate.h>
-+#include <device/pci.h>
- #include <soc/ramstage.h>
- #include "gpio.h"
- 
-@@ -8,3 +10,32 @@
- 	(void)params;
- 	mainboard_configure_late_gpios();
- }
-+
-+/* Apply the OEM CardBus setup after PCI resource assignment. */
-+static void configure_cardbus(void *unused)
-+{
-+	const struct device *root_port = pcidev_path_on_root(PCI_DEVFN(0x1c, 1));
-+	if (!root_port || !root_port->enabled || root_port->vendor != 0x8086 ||
-+	    root_port->device != 0x9d11 || !root_port->downstream)
-+		return;
-+
-+	const struct device *cardbus = pcidev_path_behind(root_port->downstream, PCI_DEVFN(0, 0));
-+	if (!cardbus || !cardbus->enabled || cardbus->vendor != 0x1217 ||
-+	    cardbus->device != 0x8134)
-+		return;
-+
-+	pci_write_config8(cardbus, 0xd3, pci_read_config8(cardbus, 0xd3) & 0x7f);
-+	pci_write_config32(cardbus, 0x40, 0x60cd17aa);
-+	pci_write_config8(cardbus, 0xf6, (pci_read_config8(cardbus, 0xf6) & 0xf3) | 0x08);
-+	pci_write_config8(cardbus, 0xdb, pci_read_config8(cardbus, 0xdb) | 0x40);
-+	pci_write_config8(cardbus, 0xe8, pci_read_config8(cardbus, 0xe8) & 0xf3);
-+	pci_write_config8(cardbus, 0x90, pci_read_config8(cardbus, 0x90) | 0x03);
-+	pci_write_config8(cardbus, 0xf4, pci_read_config8(cardbus, 0xf4) | 0x02);
-+	pci_write_config8(cardbus, 0x91, pci_read_config8(cardbus, 0x91) | 0x01);
-+	pci_write_config8(cardbus, 0xdc, pci_read_config8(cardbus, 0xdc) & 0xbf);
-+	pci_write_config8(cardbus, 0xf1, pci_read_config8(cardbus, 0xf1) | 0x70);
-+	pci_write_config8(cardbus, 0xf5, (pci_read_config8(cardbus, 0xf5) & 0xc3) | 0x34);
-+	pci_write_config8(cardbus, 0xd3, pci_read_config8(cardbus, 0xd3) | 0x80);
-+}
-+
-+BOOT_STATE_INIT_ENTRY(BS_PAYLOAD_BOOT, BS_ON_ENTRY, configure_cardbus, NULL);

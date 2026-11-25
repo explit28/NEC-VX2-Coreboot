@@ -8,8 +8,8 @@ All paths are relative to the coreboot source root. The files under `3rdparty/bl
 
 | File | Configuration | Source and purpose |
 | --- | --- | --- |
-| `3rdparty/blobs/mainboard/nec/vx-2/descriptor_testmb.bin` | `CONFIG_HAVE_IFD_BIN=y` | Intel Flash Descriptor region extracted from the working 16 MiB `nec-vx2-oem-gop-test12.rom` on the test board. Defines the flash region layout. |
-| `3rdparty/blobs/mainboard/nec/vx-2/me_testmb.bin` | `CONFIG_HAVE_ME_BIN=y` | Intel Management Engine region extracted from the same working test-board ROM. The captured build configuration has `CONFIG_USE_ME_CLEANER` disabled. |
+| `3rdparty/blobs/mainboard/nec/vx-2/descriptor_hap.bin` | `CONFIG_HAVE_IFD_BIN=y` | Intel Flash Descriptor with HAP set and the original flash layout preserved. Prepare it as described below. |
+| `3rdparty/blobs/mainboard/nec/vx-2/me.bin` | `CONFIG_HAVE_ME_BIN=y` | Full Intel Management Engine region from the target machine’s original SPI dump. The captured build configuration has `CONFIG_USE_ME_CLEANER` disabled. |
 | `3rdparty/blobs/mainboard/nec/vx-2/gbe.bin` | `CONFIG_HAVE_GBE_BIN=y` | Intel Gigabit Ethernet region from the original NEC SPI dump. Preserve the target machine's own region, which can contain its MAC address. |
 | `3rdparty/blobs/mainboard/nec/vx-2/pci8086,5917.rom` | `CONFIG_VGA_BIOS=y` | Intel legacy VGA option ROM used as a build input by the captured configuration (PCI ID `8086:5917`). |
 | `3rdparty/blobs/mainboard/nec/vx-2/IntelGopDriver.efi` | `CONFIG_EDK2_GOP_DRIVER=y` | NEC OEM Intel GOP DXE driver for EDK2, 69,568 bytes. |
@@ -48,13 +48,13 @@ grep -Ei 'Flash Region 0 .*00000000 - 00000fff' <<< "$layout" &&
 grep -Ei 'Flash Region 1 .*00800000 - 00ffffff' <<< "$layout" &&
 grep -Ei 'Flash Region 2 .*00003000 - 007fffff' <<< "$layout" &&
 grep -Ei 'Flash Region 3 .*00001000 - 00002fff' <<< "$layout" &&
-dd if="$rom" of="$out/descriptor_testmb.bin" bs=4096 count=1 status=none &&
-dd if="$rom" of="$out/me_testmb.bin" bs=4096 skip=3 count=2045 status=none &&
+dd if="$rom" of="$out/descriptor.bin" bs=4096 count=1 status=none &&
+dd if="$rom" of="$out/me.bin" bs=4096 skip=3 count=2045 status=none &&
 dd if="$rom" of="$out/gbe.bin" bs=4096 skip=1 count=2 status=none &&
-stat -c '%n: %s bytes' "$out"/{descriptor_testmb,me_testmb,gbe}.bin
+stat -c '%n: %s bytes' "$out"/{descriptor,me,gbe}.bin
 ```
 
-Expected sizes are **4,096**, **8,376,320** and **8,192** bytes respectively. The `_testmb` suffix matches the published configuration. Use the target board's own GbE region, which can carry its MAC address.
+Expected sizes are **4,096**, **8,376,320** and **8,192** bytes respectively. Use the target board's own GbE region, which can carry its MAC address.
 
 ### 2. Extract the NEC Intel GOP and matching VBT with UEFITool NE
 
@@ -119,35 +119,35 @@ PY
 
 For the tested **`8086:0406`** image, expect **65,536 bytes**. A different PCIR match is a candidate and still needs validation on the target board. A known-good local coreboot ROM that already contains the legacy image can also serve as a local fallback: `build/cbfstool /path/to/working.rom extract -n 'pci8086,5917.rom' -f "$out/pci8086,5917.rom"`.
 
-### 4. Stage the six inputs
+### 4. Prepare the HAP descriptor
 
-After checking all six files, copy them into the board blob directory. The interactive copy prompts before replacing an existing file.
+Keep `descriptor.bin` as the original-layout baseline. From a verified 16 MiB ROM with the target machine’s full ME and the original region boundaries, run the following in the coreboot checkout. Set `rom` to your own verified input and use a new output path.
+
+```sh
+rom="$PWD/VX-2-original.rom"
+hap_image="$out/vx2-me-hap-only.rom"
+desc="$out/descriptor_hap.bin"
+
+test "$(stat -c %s "$rom")" = 16777216 &&
+test ! -e "$hap_image" &&
+python3 util/me_cleaner/me_cleaner.py -s -O "$hap_image" "$rom" &&
+( set -C; head -c 4096 "$hap_image" > "$desc" ) &&
+build/util/ifdtool/ifdtool -p sklkbl -d "$desc" |
+  grep -Ei 'Flash Region [0-3] |HAP bit'
+```
+
+Check that HAP is set and the ME and BIOS boundaries match the original descriptor. The HAP build uses the full `me.bin` and disables build-time ME cleaning. See the [test matrix](test-matrix.md) for the verified boot result.
+
+### 5. Stage the six inputs
+
+After checking all six inputs, copy them into the board blob directory. The interactive copy prompts before replacing an existing file.
 
 ```bash
 dest=3rdparty/blobs/mainboard/nec/vx-2
 mkdir -p "$dest" &&
-cp -i -- "$out"/{descriptor_testmb.bin,me_testmb.bin,gbe.bin,IntelGopDriver.efi,IntelGopVbt.bin} "$out/pci8086,5917.rom" "$dest/"
+cp -i -- "$out"/{descriptor_hap.bin,me.bin,gbe.bin,IntelGopDriver.efi,IntelGopVbt.bin} "$out/pci8086,5917.rom" "$dest/"
 ```
 
 Keep OEM binaries and dumps local. Build using the 16 MiB configuration with an 8 MiB BIOS area. Verify the generated ROM's descriptor and FMAP before flashing.
 
 Avoid committing OEM flash dumps, Intel ME partitions, EC images, private keys, serial numbers, MAC addresses, UUIDs or NVRAM variables.
-
-## HAP descriptor for the reference build
-
-Keep `descriptor_testmb.bin` as the original-layout baseline. From a verified 16 MiB ROM with the full test-board ME and the original region boundaries, run the following in the coreboot checkout. Set `rom` to your own verified input and use a new output path.
-
-```sh
-rom=build/coreboot.rom
-out=nec-vx2-me-hap-only.rom
-desc=3rdparty/blobs/mainboard/nec/vx-2/descriptor_testmb_hap.bin
-
-test "$(stat -c %s "$rom")" = 16777216 &&
-test ! -e "$out" &&
-python3 util/me_cleaner/me_cleaner.py -s -O "$out" "$rom" &&
-( set -C; head -c 4096 "$out" > "$desc" ) &&
-build/util/ifdtool/ifdtool -p sklkbl -d "$desc" |
-  grep -Ei 'Flash Region [0-3] |HAP bit'
-```
-
-Check that HAP is set and the ME and BIOS boundaries match the original descriptor. The HAP build uses the full `me_testmb.bin` and disables build-time ME cleaning. See the [test matrix](test-matrix.md) for the verified boot result.

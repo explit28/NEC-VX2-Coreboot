@@ -111,7 +111,7 @@ Lenovo references: [ThinkPad L570 platform specifications](https://psref.lenovo.
 
 ## Build configuration
 
-The reference configuration enables LVGL and uses the original 16 MiB SPI layout with an 8 MiB BIOS region. It incorporates the verified HAP descriptor path, full ME input, SMMSTORE, and EDK II Secure Boot support. Secure Boot starts disabled by default and can be enabled in setup. The reference was updated from confirmed settings in the test build. The full configuration was extracted from the known-good ROM on 2026-11-24. See [build provenance](docs/build-provenance.md). The reference disables persistent SPI console logging and keeps CBMEM logging and SMMSTORE enabled.
+The reference configuration enables LVGL and uses the original 16 MiB SPI layout with an 8 MiB BIOS region. It incorporates the verified HAP descriptor path, full ME input, SMMSTORE, and EDK II Secure Boot support. Secure Boot starts disabled by default and can be enabled in setup. The reference uses the current local development checkout’s configuration. The previous reference came from a known-good ROM captured on 2026-11-24. See [build provenance](docs/build-provenance.md). The reference disables persistent SPI console logging and keeps CBMEM logging and SMMSTORE enabled.
 
 The following combination was confirmed to show the **coreboot logo through EDK2**, followed by a functional UEFI Shell:
 
@@ -126,7 +126,7 @@ CONFIG_EDK2_GOP_FILE="3rdparty/blobs/mainboard/nec/vx-2/IntelGopDriver.efi"
 CONFIG_INTEL_GMA_VBT_FILE="3rdparty/blobs/mainboard/nec/vx-2/IntelGopVbt.bin"
 ```
 
-The full tested configuration is included in `config/coreboot.config` with the device serial number cleared.
+The reference configuration is in `config/coreboot.config` with the device serial number cleared.
 
 EDK2 uses coreboot’s bundled logo (`Documentation/coreboot_logo.bmp`) in the reference configuration.
 
@@ -145,12 +145,12 @@ The working VBT had SHA-256 `407ceb6c1a3eafafc9aa441207bc23d69728465ebc046997d30
 
 ## Restore and reproduce the working development snapshot
 
-1. Use a compatible, separately obtained coreboot source checkout and its required toolchain and submodules.
-2. Restore `config/coreboot.config` to `.config` if present.
-3. Copy the source files from `board-port/` to the corresponding `src/mainboard/nec/versapro_vx2/` path. Inspect diffs before overwriting.
-4. Obtain the **matching OEM GOP + VBT from your own NEC firmware**, place them in the paths described in `docs/oem-assets.md`.
-5. Apply the [CardBus initialization and SD bus patch](patches/nec-vx2-cardbus-init-and-sd-bus.patch) to the coreboot checkout. If the SD bus fix is already present, apply with `--exclude=src/device/pci_device.c`. Verify with `git apply --check` first.
-6. Run `make olddefconfig`, then verify `.config` has not reset the graphics settings.
+1. Use coreboot revision `8b0e34f90e08547cf19e550a43ed72f69c39d6ed` and initialize its required submodules and toolchain.
+2. Copy `config/coreboot.config` to `.config` in the coreboot checkout.
+3. Install `vendor-port/Kconfig` and `vendor-port/Kconfig.name` under `src/mainboard/nec/`. Copy the contents of `board-port/` into `src/mainboard/nec/versapro_vx2/`. Inspect diffs before overwriting existing files.
+4. Stage the target machine’s OEM inputs using the filenames and paths in [OEM assets](docs/oem-assets.md).
+5. Verify the [CardBus window and SD bus patch](patches/nec-vx2-cardbus-init-and-sd-bus.patch) with `git apply --check`, then apply it from the coreboot checkout. If the SD bus fix is already present, add `--exclude=src/device/pci_device.c` to both commands. The board's `ramstage.c` already contains the full late CardBus initialization.
+6. Run `make olddefconfig` and verify the resulting board, graphics and firmware-input settings.
 7. Build with `make -j"$(nproc)"` and inspect the complete log for errors.
 8. Flash only using a proven recovery workflow and only after confirming the target chip size/partition layout.
 
