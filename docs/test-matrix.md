@@ -17,8 +17,8 @@
 | Windows 11 with Secure Boot | ✅ Working | The tester confirmed Windows 11 boots on the VX-2 with coreboot and UEFI Secure Boot enabled. |
 | Secure Boot persistence | ✅ Working | Secure Boot settings persist across restarts. |
 | SD card | ✅ Linux: Working<br>✅ Windows: Working | The SD write test passed under Linux. An SD card was readable under Windows with the test build that places the reader on PCI bus `08`. |
-| 32-bit CardBus | ✅ Linux: Working<br>⚠️ Windows: Not working | USB CardBus works under Linux. O2Micro `1217:8134` with `yenta_cardbus` enumerated a NEC uPD72870 FireWire card (`1033:00cd`); external FireWire transfers remain untested. |
-| 16-bit PCMCIA | ✅ Linux: Working<br>⚠️ Windows: Not working | 16-bit PCMCIA operation confirmed under Linux. |
+| 32-bit CardBus | ✅ Linux: Working<br>✅ Windows: Working | FireWire and USB 2.0 CardBus cards tested. Data transfer succeeded on both operating systems. |
+| 16-bit PCMCIA | ✅ Linux: Working<br>✅ Windows: Working | A 16-bit PCMCIA card reader was tested successfully, including data transfer, on both operating systems. |
 | SATA | ✅ Working | Confirmed on the VX-2 by the tester. |
 | mSATA | ✅ Working | Confirmed by the tester. Earlier logs recorded a 64 MiB read from the Kingston `SNS4151S316G` at 6.0 Gbit/s. |
 | SATA optical drive | ✅ Working | Confirmed on the VX-2 by the tester. |
@@ -65,7 +65,7 @@ The tester confirmed that internal WLAN works with the retrofitted AX200 after f
 
 The tested notebook has no exposed camera; the display bezel covers the possible camera position. Whether a connector is fitted remains unverified. The Intel Imaging Unit (`8086:1919`, `00:05.0`) appears as an unknown multimedia controller under Windows and is absent from the OEM PCI inventory. The next build should disable the unused imaging unit; the Skylake chipset tree already defaults `imgu` to off and the FSP-S code derives `SaImguEnable` from that device state. Verify the effective state and PCI enumeration before claiming a fix.
 
-The CardBus and SD reader subsystem-ID experiment requested `17aa:60cd` for both controllers. CBMEM shows that coreboot attempted both writes, but Linux still reports `1217:0002`. Windows shows no improvement. The reason the values remain unchanged is unconfirmed. Keep this experiment out of the release baseline.
+An earlier subsystem-ID-only experiment for CardBus and SD did not resolve Windows Code 31. The complete CardBus register sequence reproduced from the OEM firmware resolved Code 31 on the later test build. The SD reader uses the separate PCI bus `08` fix.
 
 ## 🟡 Remaining firmware tests
 
