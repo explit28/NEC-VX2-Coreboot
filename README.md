@@ -33,8 +33,8 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 | Internal WLAN | ✅ Working | Tested with a retrofitted Intel AX200. The VX-2 typically shipped with an Intel 8xxx-series WLAN card. |
 | Internal WLAN after resume | ✅ Working | WLAN works after resuming from suspend with the retrofitted Intel AX200. |
 | SATA, mSATA and SATA optical drive | ✅ Working | The tester confirmed operation on the VX-2. |
-| 32-bit CardBus | ✅ Linux: Working<br>⚠️ Windows: Not working | USB CardBus works under Linux. FireWire enumeration confirmed; external FireWire transfers remain untested. |
-| 16-bit PCMCIA | ✅ Linux: Working<br>⚠️ Windows: Not working | 16-bit PCMCIA operation confirmed under Linux. |
+| 32-bit CardBus | ✅ Linux: Working<br>✅ Windows: Working | FireWire and USB 2.0 CardBus cards tested. Data transfer succeeded on both operating systems. |
+| 16-bit PCMCIA | ✅ Linux: Working<br>✅ Windows: Working | A 16-bit PCMCIA card reader was tested successfully, including data transfer, on both operating systems. |
 | 64 MiB CardBus prefetchable window | ⚠️ Linux allocation warning | Also occurs with the original NEC BIOS. Smaller windows allowed the tested card to initialize. Likely non-blocking for tested use. |
 | Sound | ✅ Working | The tester confirmed audio playback. |
 | Bluetooth | ✅ Working | Bluetooth functionality confirmed on the VX-2. |
@@ -56,7 +56,8 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 | Internal NVMe disappeared with trimmed Intel ME | Restored the full original ME. Tested first with HAP clear, then with HAP set and build-time ME cleaning disabled. | **NVMe boot confirmed with full ME and HAP set**. The earlier reboot loop has no confirmed root cause. |
 | UEFI Secure Boot support needed a variable store | Enabled SMMSTORE and MrChromebox EDK II Secure Boot support. | **Enforcement confirmed** by Ubuntu booting from NVMe through shim with kernel lockdown active. |
 | Internal WLAN reported a hardware RF-kill block | The OEM GPD9 pad setting alone left the block in place. The fix opens the LPC MMIO window and sets the OEM EC `DCWL` bit during ACPI initialization. | **Internal WLAN confirmed working** with the retrofitted AX200. |
-| CardBus prefetchable window allocation failed | The smaller windows were sufficient for the tested FireWire card to enumerate and initialize its driver. | The same Linux warning occurs with the original NEC BIOS and appears non-blocking for tested use. FireWire transfers remain untested. |
+| CardBus prefetchable window allocation failed | The same Linux warning occurs with the original NEC BIOS. | Data-transfer tests passed with the tested cards. |
+| Windows reported Code 31 for the CardBus bridge | Applied the full OEM-derived register sequence to `1217:8134` late in coreboot ramstage. | **Resolved**. CardBus and 16-bit PCMCIA data transfers passed under Linux and Windows. |
 | TPM 2.0 devices were absent in Linux | Added the coreboot LPC TPM driver node. | **Linux detection restored** via `tpm_tis`. |
 
 ## Hardware / software
@@ -72,7 +73,7 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 
 | Interface | Controller or hardware ID | Linux driver and observed status |
 |---|---|---|
-| CardBus / PCMCIA | O2 Micro **OZ600TJ0TN** (package marking on board component `U17`), PCI CardBus bridge `1217:8134`, rev. `06`. Companion PCI function `1217:8150`, rev. `06`, is classified as a mass-storage controller. | `yenta_cardbus` enumerated a 32-bit FireWire card. USB CardBus and 16-bit PCMCIA work under Linux. FireWire transfers remain untested. Windows CardBus reports Code 31. |
+| CardBus / PCMCIA | O2 Micro **OZ600TJ0TN** (`U17`), PCI bridge `1217:8134`, rev. `06`. Companion function `1217:8150` is classified as mass storage. | Linux uses `yenta_cardbus`. FireWire and USB 2.0 CardBus cards and a 16-bit PCMCIA card reader passed data-transfer tests under Linux and Windows. |
 | SD / MMC | O2 Micro SD/MMC reader, PCI `1217:8621`, rev. `01`. Listed as `OZ711` in the PCI ID database. The exact chip marking and variant are unverified. | `sdhci-pci`. SD write test passed. |
 | Serial port (COM1) | Legacy 16550A-compatible UART, I/O base `0x3f8`, IRQ `4`, base baud `115200` as reported by Linux. | `serial8250` enumerates `ttyS0`. The physical connector and transmit/receive operation have yet to be verified. |
 
@@ -87,7 +88,7 @@ The NEC VX-2 port can serve as a starting point for a separate **ThinkPad L570**
 | Memory | Two DDR4 SO-DIMM slots | Two DDR4 SO-DIMM slots | Two DDR3L SO-DIMM slots |
 | External display | External VGA works. HDMI detects the monitor but shows no image. | VGA and Mini DisplayPort | VGA and Mini DisplayPort |
 | Internal storage | NVMe boot verified with a PCIe adapter in the 2.5-inch drive bay. SATA, mSATA and SATA optical drive operation also confirmed | 2.5-inch SATA or M.2 PCIe NVMe in the same drive bay with a dedicated adapter. Optional M.2 SATA storage in the WWAN slot on some configurations | 2.5-inch SATA HDD, SSD or SSHD configurations listed |
-| Expansion | 32-bit CardBus and 16-bit PCMCIA confirmed working under Linux. Five physical USB ports | Optional ExpressCard/34, four USB ports, ThinkPad dock connector | Optional ExpressCard/34, four USB ports with speeds depending on model, ThinkPad dock connector |
+| Expansion | 32-bit CardBus and 16-bit PCMCIA confirmed working under Linux and Windows. Five physical USB ports | Optional ExpressCard/34, four USB ports, ThinkPad dock connector | Optional ExpressCard/34, four USB ports with speeds depending on model, ThinkPad dock connector |
 | TPM | OEM firmware exposed TPM 2.0 via Linux `tpm_tis`. The fixed coreboot build also enumerates it | Discrete TPM 2.0 | Lenovo lists discrete TPM 1.2 and chipset firmware TPM 2.0 |
 
 Reuse the related Intel SoC initialization and the VX-2 bring-up workflow for memory, graphics and PCIe. For each Lenovo board revision, determine the DIMM/SPD configuration, GPIO and PCIe routing, EC interface and ACPI methods, panel configuration, TPM transport, and SPI layout from that target. The VX-2 WLAN fix is a reference for tracing an EC-controlled radio block. Its MMIO address and EC bit are specific to the tested NEC implementation. Use the target's own firmware dump and board-specific components. **Flash the VX-2 image only on the VX-2.**
@@ -145,9 +146,10 @@ The working VBT had SHA-256 `407ceb6c1a3eafafc9aa441207bc23d69728465ebc046997d30
 2. Restore `config/coreboot.config` to `.config` if present.
 3. Copy the source files from `board-port/` to the corresponding `src/mainboard/nec/versapro_vx2/` path. Inspect diffs before overwriting.
 4. Obtain the **matching OEM GOP + VBT from your own NEC firmware**, place them in the paths described in `docs/oem-assets.md`.
-5. Run `make olddefconfig`, then verify `.config` has not reset the graphics settings.
-6. Build with `make -j"$(nproc)"` and inspect the complete log for errors.
-7. Flash only using a proven recovery workflow and only after confirming the target chip size/partition layout.
+5. Apply the [CardBus initialization and SD bus patch](patches/nec-vx2-cardbus-init-and-sd-bus.patch) to the coreboot checkout. If the SD bus fix is already present, apply with `--exclude=src/device/pci_device.c`. Verify with `git apply --check` first.
+6. Run `make olddefconfig`, then verify `.config` has not reset the graphics settings.
+7. Build with `make -j"$(nproc)"` and inspect the complete log for errors.
+8. Flash only using a proven recovery workflow and only after confirming the target chip size/partition layout.
 
 See [Development notes](docs/development-notes.md), [Test matrix](docs/test-matrix.md) and [Snapshot script](scripts/snapshot-local.sh).
 
