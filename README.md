@@ -29,12 +29,12 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 | Internal NVMe and Secure Boot | ✅ Working | Ubuntu booted from NVMe with Secure Boot enabled. |
 | Windows 11 with Secure Boot | ✅ Working | The tester confirmed Windows 11 boots on the VX-2 with coreboot and UEFI Secure Boot enabled. |
 | Secure Boot persistence | ✅ Working | Secure Boot settings persist across restarts. |
-| SD reader | ✅ Working under Linux | The SD write test passed under Linux. Does not (yet) work under Windows. |
+| SD reader | ✅ Linux: Working<br>✅ Windows: Working | The SD write test passed under Linux. An SD card was readable under Windows with the test build that places the reader on PCI bus `08`. |
 | Internal WLAN | ✅ Working | Tested with a retrofitted Intel AX200. The VX-2 typically shipped with an Intel 8xxx-series WLAN card. |
 | Internal WLAN after resume | ✅ Working | WLAN works after resuming from suspend with the retrofitted Intel AX200. |
 | SATA, mSATA and SATA optical drive | ✅ Working | The tester confirmed operation on the VX-2. |
-| 32-bit CardBus | ✅ Working under Linux | USB CardBus works under Linux. FireWire enumeration confirmed; external FireWire transfers remain untested. Does not (yet) work under Windows. |
-| 16-bit PCMCIA | ✅ Working under Linux | 16-bit PCMCIA operation confirmed under Linux. Does not (yet) work under Windows. |
+| 32-bit CardBus | ✅ Linux: Working<br>⚠️ Windows: Not working | USB CardBus works under Linux. FireWire enumeration confirmed; external FireWire transfers remain untested. |
+| 16-bit PCMCIA | ✅ Linux: Working<br>⚠️ Windows: Not working | 16-bit PCMCIA operation confirmed under Linux. |
 | 64 MiB CardBus prefetchable window | ⚠️ Linux allocation warning | Also occurs with the original NEC BIOS. Smaller windows allowed the tested card to initialize. Likely non-blocking for tested use. |
 | Sound | ✅ Working | The tester confirmed audio playback. |
 | Bluetooth | ✅ Working | Bluetooth functionality confirmed on the VX-2. |
