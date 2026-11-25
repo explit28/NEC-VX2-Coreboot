@@ -21,7 +21,7 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 | Hardware or function | Status | Verified result or open test |
 |---|---|---|
 | Internal display and UEFI | ✅ Working | NEC GOP + VBT, graphical EDK II setup and UEFI Shell. |
-| External HDMI | ❌ No video | Linux reports `HDMI-A-1` connected and reads a 256-byte EDID after the DDPB GPIO change. The monitor still shows no image. |
+| External HDMI | ⚠️ Retest needed | No image with coreboot or with the original NEC BIOS on the test board. Linux detects the monitor and reads its EDID under coreboot. The HDMI port is on a daughterboard, and a poor connection is possible. Check the connector and retest with both firmware versions using the same monitor and cable. |
 | External VGA | ✅ Working | The tester confirmed video output on the VX-2. |
 | USB 2.0 | ✅ Working | USB live boot and USB devices on all five ports. |
 | USB SuperSpeed | ✅ Working | SuperSpeed operation confirmed on the VX-2. |
@@ -35,7 +35,7 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 | SATA, mSATA and SATA optical drive | ✅ Working | The tester confirmed operation on the VX-2. |
 | 32-bit CardBus | ✅ Working under Linux | USB CardBus works under Linux. FireWire enumeration confirmed; external FireWire transfers remain untested. Does not (yet) work under Windows. |
 | 16-bit PCMCIA | ✅ Working under Linux | 16-bit PCMCIA operation confirmed under Linux. Does not (yet) work under Windows. |
-| 64 MiB CardBus prefetchable window | ❌ Fails | Allocation failed. The tested card initialized using smaller windows. |
+| 64 MiB CardBus prefetchable window | ⚠️ Linux allocation warning | Also occurs with the original NEC BIOS. Smaller windows allowed the tested card to initialize. Likely non-blocking for tested use. |
 | Sound | ✅ Working | The tester confirmed audio playback. |
 | Bluetooth | ✅ Working | Bluetooth functionality confirmed on the VX-2. |
 | RJ45 Ethernet | ✅ Working | Wired Ethernet functionality confirmed on the VX-2. |
@@ -56,7 +56,7 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 | Internal NVMe disappeared with trimmed Intel ME | Restored the full original ME. Tested first with HAP clear, then with HAP set and build-time ME cleaning disabled. | **NVMe boot confirmed with full ME and HAP set**. The earlier reboot loop has no confirmed root cause. |
 | UEFI Secure Boot support needed a variable store | Enabled SMMSTORE and MrChromebox EDK II Secure Boot support. | **Enforcement confirmed** by Ubuntu booting from NVMe through shim with kernel lockdown active. |
 | Internal WLAN reported a hardware RF-kill block | The OEM GPD9 pad setting alone left the block in place. The fix opens the LPC MMIO window and sets the OEM EC `DCWL` bit during ACPI initialization. | **Internal WLAN confirmed working** with the retrofitted AX200. |
-| CardBus prefetchable window allocation failed | The smaller windows were sufficient for the tested FireWire card to enumerate and initialize its driver. | **Partial**. The 64 MiB allocation failure remains open, along with transfer testing. |
+| CardBus prefetchable window allocation failed | The smaller windows were sufficient for the tested FireWire card to enumerate and initialize its driver. | The same Linux warning occurs with the original NEC BIOS and appears non-blocking for tested use. FireWire transfers remain untested. |
 | TPM 2.0 devices were absent in Linux | Added the coreboot LPC TPM driver node. | **Linux detection restored** via `tpm_tis`. |
 
 ## Hardware / software
