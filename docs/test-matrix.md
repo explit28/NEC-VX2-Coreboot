@@ -38,14 +38,14 @@
 
 | Function | Status | Observed result |
 |---|---|---|
-| External HDMI | ❌ No video | Linux reports `HDMI-A-1` connected and reads a 256-byte EDID after the DDPB GPIO change. The monitor still shows no image. |
-| 64 MiB prefetchable CardBus window | ❌ Fails | Allocation failed. Smaller windows were sufficient for the tested FireWire card's BARs and driver initialization. |
+| External HDMI | ⚠️ Retest needed | No image with coreboot or with the original NEC BIOS on the test board. Linux detects the monitor and reads its EDID under coreboot. The HDMI port is on a daughterboard, and a poor connection is possible. Check the connector and retest with both firmware versions using the same monitor and cable. |
+| 64 MiB CardBus prefetchable window | ⚠️ Linux allocation warning | Also occurs with the original NEC BIOS. Smaller windows allowed the tested card to initialize. Likely non-blocking for tested use. |
 
 See the [development problem table](../README.md#development-problems-and-resolutions) for the failed graphics approaches and the changes that restored functionality.
 
 ## HDMI GPIO test, 2026-11-24
 
-The OEM GPIO snapshot reports GPP_E12 and GPP_E15 as output-high pads (DW0 `0x84000201`), whereas the running coreboot dump showed `0x44000300` for both. A test build configured both with `PAD_CFG_GPO(..., 1, PLTRST)`. The first review-checkout image displayed the TianoCore logo and hung on startup; it was not a valid HDMI test. A subsequent test using the original working development checkout booted, but HDMI still produced no image. The two pad changes did not resolve the issue; their electrical purpose remains unknown. Reverting these experimental changes is recommended. Next investigation: compare the active Intel display state and HDMI signal path against stock firmware with the same monitor and mode.
+The OEM GPIO snapshot reports GPP_E12 and GPP_E15 as output-high pads (DW0 `0x84000201`), whereas the running coreboot dump showed `0x44000300` for both. A test build configured both with `PAD_CFG_GPO(..., 1, PLTRST)`. The first review-checkout image displayed the TianoCore logo and hung on startup; it was not a valid HDMI test. A subsequent test using the original working development checkout booted, but HDMI still produced no image. The two pad changes did not resolve the issue; their electrical purpose remains unknown. Reverting these experimental changes is recommended. A later test with the original NEC BIOS on the test board also produced no HDMI image. Check the daughterboard connection, then retest both firmware versions with the same monitor and cable.
 
 ## NVMe and Intel ME, 2026-11-22
 
