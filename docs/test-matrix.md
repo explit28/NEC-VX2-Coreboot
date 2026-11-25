@@ -16,9 +16,9 @@
 | UEFI Secure Boot and Ubuntu NVMe boot | ✅ Working | `mokutil --sb-state` reported enabled. The kernel confirmed EFI Secure Boot lockdown. Ubuntu booted via `shimx64.efi` with `/` on `nvme0n1p2`. |
 | Windows 11 with Secure Boot | ✅ Working | The tester confirmed Windows 11 boots on the VX-2 with coreboot and UEFI Secure Boot enabled. |
 | Secure Boot persistence | ✅ Working | Secure Boot settings persist across restarts. |
-| SD card | ✅ Working under Linux | The SD write test passed under Linux. Does not (yet) work under Windows. |
-| 32-bit CardBus | ✅ Working under Linux | USB CardBus works under Linux. O2Micro `1217:8134` with `yenta_cardbus` enumerated a NEC uPD72870 FireWire card (`1033:00cd`); external FireWire transfers remain untested. Does not (yet) work under Windows. |
-| 16-bit PCMCIA | ✅ Working under Linux | 16-bit PCMCIA operation confirmed under Linux. Does not (yet) work under Windows. |
+| SD card | ✅ Linux: Working<br>✅ Windows: Working | The SD write test passed under Linux. An SD card was readable under Windows with the test build that places the reader on PCI bus `08`. |
+| 32-bit CardBus | ✅ Linux: Working<br>⚠️ Windows: Not working | USB CardBus works under Linux. O2Micro `1217:8134` with `yenta_cardbus` enumerated a NEC uPD72870 FireWire card (`1033:00cd`); external FireWire transfers remain untested. |
+| 16-bit PCMCIA | ✅ Linux: Working<br>⚠️ Windows: Not working | 16-bit PCMCIA operation confirmed under Linux. |
 | SATA | ✅ Working | Confirmed on the VX-2 by the tester. |
 | mSATA | ✅ Working | Confirmed by the tester. Earlier logs recorded a 64 MiB read from the Kingston `SNS4151S316G` at 6.0 Gbit/s. |
 | SATA optical drive | ✅ Working | Confirmed on the VX-2 by the tester. |
