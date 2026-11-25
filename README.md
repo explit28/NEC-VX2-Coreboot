@@ -61,7 +61,6 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 | Windows could not use the internal SD reader during bring-up | Preserved the OEM bus assignment by moving Root Port #12's secondary bus from `07` to `08` when needed. | **Resolved on the tested build**. An SD card was readable under Windows. |
 | HDMI detects the monitor but produces no image | Linux read EDID under coreboot. The test board also produced no HDMI image with the original NEC BIOS. HDMI is on a daughterboard, and its connector still needs inspection. | **Open**. Retest both firmware versions after checking the daughterboard connection. |
 | Windows still listed an Intel multimedia controller (`8086:1919`) | The current board devicetree sets `imgu` to `off`. | **Open**. Whether `8086:1919` still enumerates with the latest firmware has not been verified. |
-| Ubuntu disappeared from the EDK II boot menu after starting Windows | `bcdedit /enum firmware` still listed Ubuntu entries targeting `\\EFI\\ubuntu\\shimx64.efi`. | **Open**. The cause of the boot-menu behavior is unconfirmed. |
 | TPM 2.0 devices were absent in Linux | Added the coreboot LPC TPM driver node. | **Linux detection restored** via `tpm_tis`. |
 
 ## Hardware / software
