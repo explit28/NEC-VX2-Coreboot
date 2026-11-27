@@ -40,6 +40,7 @@
 | Function | Status | Observed result |
 |---|---|---|
 | Intel graphics under Windows | ❌ Error 43 | Intel 31.0.101.2140 on SID-fix; NEC 2019 driver causes VIDEO_TDR_FAILURE. [Investigation and test history](windows-graphics.md). |
+| FSP-GOP alternative (TestMB) | ❌ Code 43 persists | Build successful; tester reports unchanged Windows failure. [Details](windows-graphics.md#fsp-gop-experiment--2026-11-27). |
 | External HDMI | ⚠️ Retest needed | No image with coreboot or with the original NEC BIOS on the test board. Linux detects the monitor and reads its EDID under coreboot. The HDMI port is on a daughterboard, and a poor connection is possible. Check the connector and retest with both firmware versions using the same monitor and cable. |
 | 64 MiB CardBus prefetchable window | ⚠️ Linux allocation warning | Also occurs with the original NEC BIOS. Smaller windows allowed the tested card to initialize. Likely non-blocking for tested use. |
 
