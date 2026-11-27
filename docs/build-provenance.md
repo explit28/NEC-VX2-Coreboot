@@ -29,7 +29,17 @@ Files copied: board source files and complete `.config` only. OEM binaries exclu
 - The board sources disable FSP PCIe root-port function swapping and include the complete O2 Micro CardBus register sequence at payload boot. The devicetree enables root port 9 and disables the imaging unit.
 - The coreboot patch selects memory window 1 for CardBus prefetch and programs the assigned window limits on the VX-2. It moves the SD reader’s root-port secondary bus from `07` to `08` when enumeration would otherwise assign `07`.
 
-## Upstream review, 2026-11-27
+## Current upstream review, 2026-11-27
+
+The maintainer reports the new consolidated mainboard review as
+[coreboot Gerrit change #97759](https://review.coreboot.org/c/coreboot/+/97759).
+Use this link for the current review instead of the historical four-change stack below.
+The current patchset number, exact source revision, mergeability, CI status,
+and abandonment status of the preceding changes have not been independently
+verified in this documentation update. The source snapshot on GitHub has not
+been compared byte-for-byte with the new Gerrit patchset.
+
+## Historical upstream review stack, 2026-11-27
 
 The coreboot review stack starts at upstream commit
 `e91a4d69e6dab247a78ae15e85d85d103f4a800b`. Each patchset uses the
