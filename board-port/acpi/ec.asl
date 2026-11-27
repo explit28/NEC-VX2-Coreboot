@@ -11,6 +11,24 @@ Device (EC)
 	Name (_UID, 0)
 	Name (_GPE, 0x50)
 
+#if CONFIG(NEC_VX2_IGD_OEM_COMPAT)
+	Name (NERC, Zero)
+	OperationRegion (NERM, EmbeddedControl, 0x46, One)
+	Field (NERM, ByteAcc, NoLock, Preserve)
+	{
+		, 2,
+		NHPL, 1
+	}
+
+	Method (_REG, 2, NotSerialized)
+	{
+		If (Arg0 == 3)
+		{
+			NERC = Arg1
+		}
+	}
+#endif
+
 	/* Experimental WLAN initialization based on the OEM DCWL field. */
 	OperationRegion (WLER, SystemMemory, 0xFE80013A, 1)
 	Field (WLER, ByteAcc, NoLock, Preserve)

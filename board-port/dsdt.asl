@@ -29,5 +29,33 @@ DefinitionBlock(
 		#include <drivers/intel/gma/acpi/default_brightness_levels.asl>
 	}
 
+#if CONFIG(NEC_VX2_IGD_OEM_COMPAT)
+	#include "acpi/igd-oem.asl"
+#else
+	Scope (\_SB.PCI0.GFX0)
+	{
+		/* Intel IGD power and mode notifications supported by the NEC BIOS. */
+		Method (_DSM, 4, Serialized)
+		{
+			If (Arg0 == ToUUID ("3e5b41c6-eb1d-4260-9d15-c71fbadae414") &&
+			    Arg1 == One)
+			{
+				If (Arg2 == Zero)
+				{
+					Return (Buffer (One) { 0x7D })
+				}
+
+				If ((Arg2 >= 0x02) && (Arg2 <= 0x06))
+				{
+					Return (One)
+				}
+			}
+
+			Return (Buffer (One) { Zero })
+		}
+	}
+
+#endif
+
 	#include <southbridge/intel/common/acpi/sleepstates.asl>
 }

@@ -29,4 +29,21 @@ config DIMM_MAX
 config DIMM_SPD_SIZE
 	default 512
 
+config NEC_VX2_IGD_OEM_COMPAT
+	bool "Experimental NEC VX-2 OEM IGD ACPI compatibility"
+	depends on EDK2_GOP_DRIVER && NO_GFX_INIT && !MAINBOARD_USE_LIBGFXINIT
+	help
+	  Enable the NEC-specific IGD _DSM subset and bind ACPI to the
+	  coreboot-owned OpRegion. SWSCI remains unadvertised and its
+	  GPE handler is not registered. This option requires the existing
+	  EDK2 GOP setup and leaves the Coreboot OpRegion mailbox mask intact.
+
+config NEC_VX2_IGD_DSM_INTEGER_QUERY
+	bool "Return the Intel IGD _DSM function bitmap as an integer"
+	depends on NEC_VX2_IGD_OEM_COMPAT
+	help
+	  Test the OEM return type for function zero of the Intel IGD _DSM.
+	  The response still advertises only implemented functions. Leave
+	  this disabled to return the standard ACPI buffer response.
+
 endif # BOARD_NEC_VERSAPRO_VX2

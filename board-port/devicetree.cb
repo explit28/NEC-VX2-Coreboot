@@ -25,6 +25,7 @@ chip soc/intel/skylake
 
 	device domain 0 on
 		device ref igpu on
+			subsystemid 0x17aa 0x60cf
 			register "gfx" = "GMA_STATIC_DISPLAYS(0)"
             register "panel_cfg" = "{
                 .up_delay_ms = 200,

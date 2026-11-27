@@ -1,0 +1,39 @@
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+[Defines]
+  INF_VERSION = 0x0001001B
+  BASE_NAME = Vx2PanelDxe
+  FILE_GUID = 9b3db7f3-3fe5-4d2c-980f-bd96af057c4c
+  MODULE_TYPE = DXE_DRIVER
+  VERSION_STRING = 1.0
+  ENTRY_POINT = Vx2PanelEntry
+
+[Sources]
+  Vx2PanelDxe.c
+  Vx2PanelProfiles.h
+  Vx2Igd.c
+  Vx2Igd.h
+
+[Packages]
+  MdePkg/MdePkg.dec
+
+[LibraryClasses]
+  BaseLib
+  BaseMemoryLib
+  DebugLib
+  DevicePathLib
+  IoLib
+  MemoryAllocationLib
+  UefiBootServicesTableLib
+  UefiDriverEntryPoint
+
+[Protocols]
+  gEfiPciIoProtocolGuid
+  gEfiGraphicsOutputProtocolGuid
+  gEfiEdidActiveProtocolGuid
+  gEfiEdidDiscoveredProtocolGuid
+
+[Guids]
+  gEfiEventReadyToBootGuid
+
+[Depex]
+  TRUE

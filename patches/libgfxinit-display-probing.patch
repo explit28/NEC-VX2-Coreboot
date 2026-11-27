@@ -1,0 +1,88 @@
+diff --git a/common/hw-gfx-gma-display_probing.adb b/common/hw-gfx-gma-display_probing.adb
+index 6908055..f676a84 100644
+--- a/common/hw-gfx-gma-display_probing.adb
++++ b/common/hw-gfx-gma-display_probing.adb
+@@ -24,6 +24,7 @@ with HW.GFX.GMA.Port_Detect;
+ with HW.GFX.GMA.Power_And_Clocks;
+ 
+ with HW.Debug;
++with HW.Debug_Sink;
+ with GNAT.Source_Info;
+ 
+ package body HW.GFX.GMA.Display_Probing
+@@ -71,10 +72,16 @@ is
+    begin
+       pragma Debug (Debug.Put_Line (GNAT.Source_Info.Enclosing_Entity));
+ 
++      HW.Debug_Sink.Put ("NEC-EDID2: begin " & Port_Type'Image (Port));
++
++      HW.Debug_Sink.New_Line;
++
+       for I in 1 .. 2 loop
+          if Config_Helpers.To_Display_Type (Port) = DP then
+             -- May need power and CDClk to read EDID
+             Power_And_Clocks.Power_Up (Port, Success);
++            HW.Debug_Sink.Put ("NEC-EDID2: DP Power_Up=" & Boolean'Image (Success));
++            HW.Debug_Sink.New_Line;
+             exit when not Success;
+             Power_And_Clocks.Enable_CDClk;
+ 
+@@ -106,6 +113,8 @@ is
+                   Length   => Raw_EDID_Length,
+                   Data     => Raw_EDID,
+                   Success  => Success);
++               HW.Debug_Sink.Put ("NEC-EDID2: AUX I2C_Read=" & Boolean'Image (Success));
++               HW.Debug_Sink.New_Line;
+             end;
+          else
+             I2C.I2C_Read
+@@ -116,11 +125,15 @@ is
+                Length   => Raw_EDID_Length,
+                Data     => Raw_EDID,
+                Success  => Success);
++            HW.Debug_Sink.Put ("NEC-EDID2: DDC I2C_Read=" & Boolean'Image (Success));
++            HW.Debug_Sink.New_Line;
+          end if;
+          exit when not Success;  -- don't retry if reading itself failed
+ 
+          pragma Debug (Debug.Put_Buffer ("EDID", Raw_EDID, Raw_EDID_Length));
+          EDID.Sanitize (Raw_EDID, Success);
++         HW.Debug_Sink.Put ("NEC-PROBE: EDID sanitize=" & Boolean'Image (Success));
++         HW.Debug_Sink.New_Line;
+          exit when Success;
+       end loop;
+    end Read_EDID;
+@@ -133,11 +146,19 @@ is
+    is
+       Raw_EDID : EDID.Raw_EDID_Data with Relaxed_Initialization;
+    begin
++      HW.Debug_Sink.Put ("NEC-PROBE: Port " & Port_Type'Image (Port));
++      HW.Debug_Sink.New_Line;
+       Success := Config.Valid_Port (Port);
++      HW.Debug_Sink.Put ("NEC-PROBE: Valid_Port=" & Boolean'Image (Success));
++      HW.Debug_Sink.New_Line;
+ 
+       if Success then
+          Panel.Wait_On (Config_Helpers.To_Panel (Port));
++         HW.Debug_Sink.Put ("NEC-PROBE: Panel wait complete");
++         HW.Debug_Sink.New_Line;
+          Read_EDID (Raw_EDID, Port, Success);
++         HW.Debug_Sink.Put ("NEC-PROBE: Read_EDID result=" & Boolean'Image (Success));
++         HW.Debug_Sink.New_Line;
+       end if;
+ 
+       if Success and then
+@@ -171,8 +192,13 @@ is
+          pragma Warnings (GNATprove, On, """Raw_EDID"" is set by * but*");
+          pragma Warnings (GNATprove, On, "unused assignment to ""Raw_EDID""");
+       else
++         HW.Debug_Sink.Put ("NEC-PROBE: Port not accepted (read/compatibility/mode)");
++         HW.Debug_Sink.New_Line;
+          Success := False;
+       end if;
++      HW.Debug_Sink.Put ("NEC-PROBE: final " & Port_Type'Image (Port) &
++         " success=" & Boolean'Image (Success));
++      HW.Debug_Sink.New_Line;
+    end Probe_Port;
+ 
+    procedure Scan_Ports

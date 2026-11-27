@@ -7,3 +7,4 @@ romstage-y += memory_init_params.c
 ramstage-y += gpio.c
 ramstage-y += ramstage.c
 ramstage-$(CONFIG_MAINBOARD_USE_LIBGFXINIT) += gma-mainboard.ads
+ramstage-$(CONFIG_NEC_VX2_IGD_OEM_COMPAT) += igd_oem.c

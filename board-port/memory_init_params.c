@@ -12,6 +12,9 @@ void mainboard_memory_init_params(FSPM_UPD *mupd)
 {
 	FSP_M_CONFIG *mem_cfg = &mupd->FspmConfig;
 
+	/* Keep the experimental 128 MiB graphics preallocation. */
+	mem_cfg->IgdDvmt50PreAlloc = 0x04;
+
 	/* Provisional values based on the ThinkPad T580. */
 	mem_cfg->DqPinsInterleaved = true;
 	mem_cfg->CaVrefConfig = 2;
