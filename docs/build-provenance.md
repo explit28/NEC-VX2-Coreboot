@@ -63,3 +63,38 @@ the hardware-tested development sources based on coreboot 26.09. The
 [Windows graphics results](windows-graphics.md) record observations from
 the development firmware. Building the review stack requires separate
 validation before those results can be attributed to it.
+
+### Gerrit mergeability and CI
+
+Coreboot's Gerrit project uses `CHERRY_PICK`. Its mergeability check
+tests each patchset against `main` individually. The base board patch
+passes that check. The three follow-up changes require board files
+introduced by their predecessors, so Gerrit reports them as merge
+conflicts while those files are absent from `main`. All four patchsets
+apply in the order above. Gerrit's related-changes API shows that exact
+parent chain, and its submitted-together API returns an empty list.
+
+The previous Jenkins runs failed the lowercase-`coreboot` lint check
+on two GitHub URLs and, in the experimental graphics change, on the
+Kconfig help text. The patchsets above contain the spelling fixes.
+Gerrit initially copied the old `Verified -1` votes to 97744 and 97745
+because their patch content was unchanged. The replacement Jenkins jobs
+all passed the previously failing lint test.
+
+All four commits also passed local stable lint, extended lint and
+checkpatch and produced a VX-2 coreboot ROM with `PAYLOAD_NONE`.
+Those builds validate the default board configuration without an
+EDK2 payload or OEM flash layout.
+
+The experimental 97746 configuration also compiled its ramstage and
+DSDT with OEM compatibility and integer DSM query enabled. This
+check covered the coreboot code and AML, without building EDK2.
+
+At the 2026-11-27 status check, 97596 remained open with Code-Review
+and Verified outstanding. The succeeding Gerrit changes were still
+reported as individually non-mergeable. The replacement Jenkins jobs
+were still running after passing the lowercase check:
+[97596](https://qa.coreboot.org/job/coreboot-gerrit/310212/),
+[97744](https://qa.coreboot.org/job/coreboot-gerrit/310213/),
+[97745](https://qa.coreboot.org/job/coreboot-gerrit/310214/), and
+[97746](https://qa.coreboot.org/job/coreboot-gerrit/310215/).
