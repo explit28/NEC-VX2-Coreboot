@@ -15,12 +15,13 @@ IGD PCI 00:02.0, 8086:5917; OEM subsystem 17AA:60CF. Results below are hardware 
 | SID fix | 17AA:60CF | NEC 2019 | Both internal and external display cycle black/bright; VIDEO_TDR_FAILURE |
 | SID fix | 17AA:60CF | Intel 2025 | Code 43 after manual switch in Safe Mode and normal reboot |
 | SID fix | 17AA:60CF | Linux i915 | Working (tester confirmed); no new benchmark recorded |
+| FSP-GOP TestMB | 17AA:60CF (configured) | Windows Intel driver (version not rechecked) | Code 43; same reported behavior as OEM GOP |
 
 Safe Mode works. The external monitor exhibited the same Windows failure; this is not evidence that HDMI specifically has been repaired. Earlier HDMI-specific hardware issue remains separate.
 
 ## Development history and retained changes
 
-- libgfxinit failed to obtain panel EDID over AUX; legacy VBIOS produced no visible pixels. OEM GOP/VBT through MrChromebox EDK2 restores graphical preboot output. Keep this path, not libgfxinit.
+- libgfxinit failed to obtain panel EDID over AUX; legacy VBIOS produced no visible pixels. OEM GOP/VBT through MrChromebox EDK2 restores graphical preboot output. Keep this path as the known working preboot reference; a new isolated libgfxinit experiment is planned.
 - OEM GGC 0x01C1 corresponds to 32 MiB preallocation and 8 MiB GGTT; 128 MiB was selected deliberately for testing, not claimed to be the OEM physical allocation. FSP-M IgdDvmt50PreAlloc=0x04 produces GGC 0x04C1. Increasing DVMT did not fix Code 43.
 - Early DSM/PCON and subsystem experiments did not resolve Code 43; earlier DWORD PreMem subsystem write caused Windows regression, then reverted.
 - OEM compatibility V1/V2 added board-scoped graphics AML and CBMEM-backed graphics state, partial DSM functions, guarded SWSCI-related methods. V2 full build tested: Code 43 unchanged. SWSCI is deliberately not activated.
@@ -56,6 +57,22 @@ Both base INF Kaby Lake sections specify FeatureTestControl=0x8200, PSR2Disable=
 The tester directly observed VIDEO_TDR_FAILURE. Earlier session dump analysis reported 0x116 with Arg3=0 and Arg4=0xD, plus igdkmd64.sys references; no symbol-assisted WinDbg analysis has been completed. Treat detailed dump interpretation as provisional. [Microsoft bugcheck reference](https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x116---video-tdr-failure).
 
 VBS/HVCI/hypervisor disabled test on an earlier build did not resolve Code 43; VT-d itself was not excluded. Restoration of the security settings should be checked.
+
+## FSP-GOP experiment — 2026-11-27
+
+**Unsuccessful Windows graphics fix.** The tester flashed and tested the TestMB image and reports the same Windows Code 43 as with the OEM GOP in EDK2. The build succeeded; this is a runtime failure, not a compilation failure.
+
+- Coreboot base: `0c42e2ee1fe1179bbb973765493842141b228686`; displayed version 26.09.
+- ROM: `NEC-VX2-IGD-FSP-GOP-TestMB.rom`, SHA256 `58570a7ab60a84a54345e181df76af770923cc8512267b38003135ee601090be` (verified against supplied ROM).
+- RUN_FSP_GOP enabled, NO_GFX_INIT and EDK2 OEM GOP disabled. FSP-S receives the original NEC VBT; EDK2 GraphicsOutputDxe consumes the framebuffer handoff. LVGL retained.
+- DVMT128, OEM SID, OpRegion ACPI NVS and experimental DSM retained in configuration; SWSCI inactive. Kconfig expanded to allow FSP-GOP; EDK2 DSC/FDF keep Vx2PanelDxe outside the platform GOP conditional.
+- The generic framebuffer GOP does not provide EDID protocols in the inspected source path. Vx2PanelDxe may skip panel metadata; no runtime EDID/OpRegion dump was supplied for this test.
+- Test board uses its own descriptor_testmb_hap.bin, gbe_testmb.bin and full me_testmb.bin; ME cleaner disabled. Build report confirms region comparisons and HAP set. Proprietary binaries remain local.
+- The supplied build log shows successful AML compilation (0 errors, 0 warnings) and a completed ROM.
+
+Changing the GOP initialization path alone did not resolve Code 43. This weakens the hypothesis that the EDK2 OEM GOP path alone is responsible; it does not exclude shared FSP policy, ACPI, GPU state or differences in EDID handoff. Linux acceleration was confirmed separately on the earlier OEM-GOP firmware (Mesa Intel UHD 620, OpenGL 4.6, Accelerated: yes); it has not been independently retested on this FSP build.
+
+Next experiment: native libgfxinit, with both hardware GOP paths disabled, retaining the same TestMB inputs and board policy. Investigate the historical eDP AUX/EDID failure before building; do not claim a successful Windows test until hardware validation.
 
 ## Open investigation
 
