@@ -20,6 +20,8 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 
 | Hardware or function | Status | Verified result or open test |
 |---|---|---|
+| Intel graphics under Linux | ✅ Working | Intel UHD 620 with i915; SID-fix hardware test passed. |
+| Intel graphics under Windows | ❌ Error 43 | Intel 31.0.101.2140; NEC 2019 driver can cause VIDEO_TDR_FAILURE. See [Windows graphics investigation](docs/windows-graphics.md). |
 | Internal display and UEFI | ✅ Working | NEC GOP + VBT, graphical EDK II setup and UEFI Shell. |
 | External HDMI | ⚠️ Retest needed | No image with coreboot or with the original NEC BIOS on the test board. Linux detects the monitor and reads its EDID under coreboot. The HDMI port is on a daughterboard, and a poor connection is possible. Check the connector and retest with both firmware versions using the same monitor and cable. |
 | External VGA | ✅ Working | The tester confirmed video output on the VX-2. |
@@ -27,7 +29,7 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 | USB SuperSpeed | ✅ Working | SuperSpeed operation confirmed on the VX-2. |
 | Pre-boot USB keyboard | ✅ Working | USB keyboard input works before the operating system boots. |
 | Internal NVMe and Secure Boot | ✅ Working | Ubuntu booted from NVMe with Secure Boot enabled. |
-| Windows 11 with Secure Boot | ✅ Working | The tester confirmed Windows 11 boots on the VX-2 with coreboot and UEFI Secure Boot enabled. |
+| Windows 11 with Secure Boot | ✅ Working | Previously verified Windows 11 boot with Secure Boot enabled; native Intel graphics remains broken (Code 43). |
 | Secure Boot persistence | ✅ Working | Secure Boot settings persist across restarts. |
 | SD reader | ✅ Linux: Working<br>✅ Windows: Working | The SD write test passed under Linux. An SD card was readable under Windows with the test build that places the reader on PCI bus `08`. |
 | Internal WLAN | ✅ Working | Tested with a retrofitted Intel AX200. The VX-2 typically shipped with an Intel 8xxx-series WLAN card. |
@@ -155,8 +157,7 @@ activation status.
 **Windows still reports Code 43 with Combined V2.** The new coreboot
 SID correction targets PCI `00:02.0`, DWORD `0x2C`, with expected value
 `0x60CF17AA` and Windows hardware ID
-`PCI\VEN_8086&DEV_5917&SUBSYS_60CF17AA`. The new build still requires
-hardware verification. Its effect on Code 43 is unknown.
+`PCI\VEN_8086&DEV_5917&SUBSYS_60CF17AA`. Hardware diagnostic 02 confirms the expected ID. Windows with the 2025 Intel driver still reports Code 43; the 2019 NEC driver causes VIDEO_TDR_FAILURE. Linux graphics works. See the dedicated [Windows graphics investigation](docs/windows-graphics.md).
 
 The source overlays, patches, complete sanitized configuration and
 EFI diagnostic sources are included. Follow the
