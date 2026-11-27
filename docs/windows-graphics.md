@@ -1,0 +1,73 @@
+# Windows graphics compatibility — Intel UHD 620
+
+Status: 2026-11-27. Open firmware compatibility issue; Linux graphics works, Windows native Intel graphics reports Device Manager Code 43 with the 2025 driver. The older NEC driver can cause VIDEO_TDR_FAILURE (0x116). Windows boot and GOP output are not evidence of working Windows acceleration.
+
+## Hardware and test matrix
+
+IGD PCI 00:02.0, 8086:5917; OEM subsystem 17AA:60CF. Results below are hardware tester observations; not all earlier builds were tested with identical memory or Windows configuration.
+
+| Firmware | Subsystem | Driver | Result |
+|---|---|---|---|
+| Original NEC BIOS | 17AA:60CF | 25.20.100.6577 (2019-02-07) | Windows graphics works |
+| Original NEC BIOS | 17AA:60CF | 31.0.101.2140 (2025-11-05) | Windows graphics works |
+| Early coreboot / DVMT128 | 8086:2212 | Intel 2025 | Code 43 persists |
+| Combined V2 | 17AA:2212 | Intel 2025 | Code 43 |
+| SID fix | 17AA:60CF | NEC 2019 | Both internal and external display cycle black/bright; VIDEO_TDR_FAILURE |
+| SID fix | 17AA:60CF | Intel 2025 | Code 43 after manual switch in Safe Mode and normal reboot |
+| SID fix | 17AA:60CF | Linux i915 | Working (tester confirmed); no new benchmark recorded |
+
+Safe Mode works. The external monitor exhibited the same Windows failure; this is not evidence that HDMI specifically has been repaired. Earlier HDMI-specific hardware issue remains separate.
+
+## Development history and retained changes
+
+- libgfxinit failed to obtain panel EDID over AUX; legacy VBIOS produced no visible pixels. OEM GOP/VBT through MrChromebox EDK2 restores graphical preboot output. Keep this path, not libgfxinit.
+- OEM GGC 0x01C1 corresponds to 32 MiB preallocation and 8 MiB GGTT; 128 MiB was selected deliberately for testing, not claimed to be the OEM physical allocation. FSP-M IgdDvmt50PreAlloc=0x04 produces GGC 0x04C1. Increasing DVMT did not fix Code 43.
+- Early DSM/PCON and subsystem experiments did not resolve Code 43; earlier DWORD PreMem subsystem write caused Windows regression, then reverted.
+- OEM compatibility V1/V2 added board-scoped graphics AML and CBMEM-backed graphics state, partial DSM functions, guarded SWSCI-related methods. V2 full build tested: Code 43 unchanged. SWSCI is deliberately not activated.
+- Combined V1 retained DVMT128, experimental integer DSM return and brightness valid-bit changes. Combined V2 superseded its brightness implementation with Post-GOP DXE, added ACPI NVS reservation, live EDID handoff, panel brightness curve, EC lid state and additional guarded DSM support. See [build instructions](combined-v2-build.md). Code 43 persisted.
+- Combined V2 normal PCI subsystem programming corrected SVID only. FSP-M analysis identified the early SID latch; guarded board-local 16-bit SID write before FSP-M corrected it without writing SVID prematurely. See [SID analysis](igd-ssid.md).
+- Retain all current source changes for further diagnostics, but classify SID-fix as experimental, not a Windows graphics fix. No flash, ME/IFD modification or Gerrit push is needed for this documentation update.
+
+## Post-GOP EFI diagnostic results
+
+| Field | Diagnostic 00 (DVMT128) | Diagnostic 01 (Combined V2) | Diagnostic 02 (SID fix) |
+|---|---|---|---|
+| PCI subsystem DWORD | 22128086 | 221217AA | 60CF17AA |
+| IGD command | 0007 | 0007 | 0007 |
+| GGC / MSAC | 04C1 / 01 | 04C1 / 01 | 04C1 / 01 |
+| BDSM / BGSM | 78000001 / 77800001 | same | same |
+| TOLUD | 80000001 | same | same |
+| ASLS | 76A3E000 | 76A3D000 | 76A3D000 |
+| OpRegion memory type | Reserved | ACPI NVS | ACPI NVS |
+| OpRegion mailbox mask / PCON | 1D / 0 | 1D / 0 | 1D / 0 |
+| PHED / EDID | 0 / absent | 1 / valid 128 bytes | 1 / valid 128 bytes |
+| BCLP | FF | 800000FF | 800000FF |
+
+Diagnostic 02 reports PCI bytes AA 17 CF 60 at 0x2C; SID fix verified on hardware. ACPI NVS covers exactly 2 pages at ASLS. GOP 1920x1080, framebuffer D0000000, EDID LG Display LP156WF6-SPK6. BCLM populated, CLID=1, PFIT=80000006, CBLV=80000064. Reported sampled power well registers F000000F/50000005/40000000/50000005, FUSE_STATUS=8E000000, CDCLK_CTL=0C000544, STOLEN_RESERVED=0 and initial eight GGTT PTEs mapping 78000000 through 78007000 match the earlier reported readings. This does not prove full render/PPGTT operation or identical unmeasured hardware state.
+
+Physical DVMT reservation is confirmed: BDSM masked=78000000, TOLUD masked=80000000 (128 MiB); BGSM masked=77800000 (8 MiB GGTT). Windows previously reported 0 graphics memory; this is not proof of absent physical reservation. Current Windows memory reporting after the driver switch has not been measured.
+
+## Windows driver selection and crash analysis
+
+SetupAPI analysis in the diagnostic session reported that the exact SUBSYS_60CF17AA match selects oem21.inf (iigd_dch1.inf, rank 00CF0001) over generic oem45.inf (iigd_dch.inf, rank 00CF2001). The NEC extension oem3.inf (iigd_ext1.inf) also matches the OEM ID. INF excerpts directly confirm those hardware matches and versions. The 2025 driver was manually selected in Safe Mode (version and signature photographed), then normal boot returned Code 43. The effective extension and post-reboot binding should be verified separately.
+
+Both base INF Kaby Lake sections specify FeatureTestControl=0x8200, PSR2Disable=0, Psr2DrrsEnable=1, LFP_Brightness_Control=0, DisplayFeatureControl=0x3E3, MSISupported=1, ForcePLLDisableEnableForFreqChange=0 and SkipAudioPowerWellConfigInCS=0. The 2019 section additionally specifies ControlDACDriverLoadOrder=1; the 2025 section adds KmFtrControl=3. NEC extension specifies FeatureTestControl=0x8220, DisableEdramForDisplayRT=1 (comment targets GT3e flicker; this GPU is GT2), and ShowOptimalBalloon=0. Exact semantics of bit 5 and KmFtrControl are unverified; INF values do not establish effective registry state.
+
+The tester directly observed VIDEO_TDR_FAILURE. Earlier session dump analysis reported 0x116 with Arg3=0 and Arg4=0xD, plus igdkmd64.sys references; no symbol-assisted WinDbg analysis has been completed. Treat detailed dump interpretation as provisional. [Microsoft bugcheck reference](https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x116---video-tdr-failure).
+
+VBS/HVCI/hypervisor disabled test on an earlier build did not resolve Code 43; VT-d itself was not excluded. Restoration of the security settings should be checked.
+
+## Open investigation
+
+- OEM OpRegion mailbox mask 0x1F at initialization versus current 0x1D; OEM PCON policy versus current zero; GOP DVER remains empty. OEM runtime OpRegion snapshot still missing.
+- Complete OEM DSM behavior, especially function 0x0F GetInternalGraphics, and policy dependencies. Do not advertise unsupported functions or blindly copy OEM AML.
+- SWSCI GBDA/SBCB and shared GPE _L66 semantics; do not enable mailbox 2 until full safe handler and event routing are validated.
+- Compare OEM and coreboot power-management, interrupts, render reset, GGTT/PPGTT, PAVP and DMAR/VT-d. No confirmed causal register yet.
+- Obtain symbol-assisted crash analysis and current Windows problem status, driver/extension binding and AdapterRAM. Avoid changing TDR timeout or disabling recovery.
+- Compare with related Kaby Lake ThinkPad implementations while retaining the working OEM GOP path. Test both Windows drivers, Linux acceleration and existing peripherals after future changes.
+
+Success requires native Windows Intel driver starts without Code 43 or TDR, acceleration and stable internal/external display tested, and no Linux/peripheral regressions. The SID correction alone is verified, not sufficient.
+
+## Provenance and privacy
+
+Reference local coreboot commits d072b8f075a5935015313c45b74cc1f67fed79b0 (Combined V2), 3a8c0b4108fbc274dca7fc53fecd84b679b0ecfd (SID fix), EDK2 44b9aa144a5ff5ceb843245388fb00c87a06895f, as reported by the build manifest. SID-fix ROM SHA256 201e121bce150176cd943e5b92d47a5f2eb344be58c95e69cff3abd2e8b903d4 (manifest value). Local artifacts remain under NEC-VX2-Testbuild within the existing coreboot checkout. Publish sanitized findings only, not Windows dumps, registry hives, OEM binary assets, device identifiers beyond hardware IDs, or raw private logs.
