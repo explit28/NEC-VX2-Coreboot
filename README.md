@@ -6,7 +6,7 @@ The NEC VersaPro VX-2 tested for this port was built in 2019 in a configuration 
 
 The VX-2 (Compal `LA-C423P`) shares much of its mainboard platform with the ThinkPad L560 (`LA-C421P`) and L570 (`LA-C422P`). Each model uses a distinct PCB. The L560 uses DDR3L, while the L570 and VX-2 use DDR4. A coreboot port for either ThinkPad needs its own hardware validation. See [the platform comparison](#porting-reference-for-thinkpad-l570-and-l560) below.
 
-> Experimental port submitted for [upstream coreboot review (#97596)](https://review.coreboot.org/c/coreboot/+/97596). Keep a verified backup of the original SPI flash and a known-recoverable external programmer setup. Do not flash another device's complete image. The bundled snapshot is not necessarily ready to flash without integrating its board-specific configuration and required OEM components.
+> Experimental port submitted for [upstream coreboot review (#97759)](https://review.coreboot.org/c/coreboot/+/97759). Keep a verified backup of the original SPI flash and a known-recoverable external programmer setup. Do not flash another device's complete image. The bundled snapshot is not necessarily ready to flash without integrating its board-specific configuration and required OEM components.
 
 ## Screenshots
 
