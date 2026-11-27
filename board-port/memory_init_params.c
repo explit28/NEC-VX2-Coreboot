@@ -5,8 +5,31 @@
  * SPD addresses and channel allocation verified from stock firmware.
  */
 
+#include <console/console.h>
+#include <device/pci_ops.h>
+#include <soc/pci_devs.h>
 #include <soc/romstage.h>
 #include <spd_bin.h>
+
+static void set_igd_subsystem_device(void)
+{
+	u16 sid;
+
+	if (pci_read_config32(SA_DEV_IGD, PCI_VENDOR_ID) != 0x59178086)
+		return;
+
+	/*
+	 * FSP-M programs the write-once IGD SID to 0x2212. Set only the SID
+	 * while it is at its reset value. The devicetree supplies SVID later.
+	 */
+	sid = pci_read_config16(SA_DEV_IGD, PCI_SUBSYSTEM_ID);
+	if (sid == 0) {
+		pci_write_config16(SA_DEV_IGD, PCI_SUBSYSTEM_ID, 0x60cf);
+		sid = pci_read_config16(SA_DEV_IGD, PCI_SUBSYSTEM_ID);
+	}
+	if (sid != 0x60cf)
+		printk(BIOS_WARNING, "NEC IGD: unexpected pre-FSP-M SID %04x\n", sid);
+}
 
 void mainboard_memory_init_params(FSPM_UPD *mupd)
 {
@@ -30,4 +53,7 @@ void mainboard_memory_init_params(FSPM_UPD *mupd)
 
 	mem_cfg->MemorySpdPtr00 = (uintptr_t)blk.spd_array[0];
 	mem_cfg->MemorySpdPtr10 = (uintptr_t)blk.spd_array[1];
+
+	if (mem_cfg->InternalGfx)
+		set_igd_subsystem_device();
 }
