@@ -8,13 +8,14 @@
 | OEM Intel GOP + VBT graphical output | ✅ Working | Visible coreboot logo in EDK2 |
 | EDK2 UEFI Shell | ✅ Working | Shell appeared after splash |
 | EDK2 graphical setup (LVGL + NEC OEM GOP) | ✅ Working | Graphical Firmware Setup photographed on the test board |
+| Intel graphics under Linux | ✅ Working | Intel UHD 620 with i915; confirmed on SID-fix firmware. |
 | USB boot into Ubuntu Live | ✅ Working | Booted a USB stick after the USB and PCIe bring-up changes. |
 | USB 2.0 | ✅ Working | USB devices worked on all five physical ports. |
 | USB SuperSpeed | ✅ Working | SuperSpeed operation confirmed on the VX-2. |
 | Pre-boot USB keyboard | ✅ Working | USB keyboard input works before the operating system boots. |
 | Internal NVMe detection and Linux boot with HAP | ✅ Working | Kingston NV2 `2646:501d` at `03:00.0` behind `00:1c.4`. Linux 7.0.0-44 mounted its ext4 root on `nvme0n1p2` and remounted it read/write. |
 | UEFI Secure Boot and Ubuntu NVMe boot | ✅ Working | `mokutil --sb-state` reported enabled. The kernel confirmed EFI Secure Boot lockdown. Ubuntu booted via `shimx64.efi` with `/` on `nvme0n1p2`. |
-| Windows 11 with Secure Boot | ✅ Working | The tester confirmed Windows 11 boots on the VX-2 with coreboot and UEFI Secure Boot enabled. |
+| Windows 11 with Secure Boot | ✅ Working | Previously verified Windows 11 boot with Secure Boot enabled; this is not a native graphics acceleration test. |
 | Secure Boot persistence | ✅ Working | Secure Boot settings persist across restarts. |
 | SD card | ✅ Linux: Working<br>✅ Windows: Working | The SD write test passed under Linux. An SD card was readable under Windows with the test build that places the reader on PCI bus `08`. |
 | 32-bit CardBus | ✅ Linux: Working<br>✅ Windows: Working | FireWire and USB 2.0 CardBus cards tested. Data transfer succeeded on both operating systems. |
@@ -38,6 +39,7 @@
 
 | Function | Status | Observed result |
 |---|---|---|
+| Intel graphics under Windows | ❌ Error 43 | Intel 31.0.101.2140 on SID-fix; NEC 2019 driver causes VIDEO_TDR_FAILURE. [Investigation and test history](windows-graphics.md). |
 | External HDMI | ⚠️ Retest needed | No image with coreboot or with the original NEC BIOS on the test board. Linux detects the monitor and reads its EDID under coreboot. The HDMI port is on a daughterboard, and a poor connection is possible. Check the connector and retest with both firmware versions using the same monitor and cable. |
 | 64 MiB CardBus prefetchable window | ⚠️ Linux allocation warning | Also occurs with the original NEC BIOS. Smaller windows allowed the tested card to initialize. Likely non-blocking for tested use. |
 
