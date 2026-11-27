@@ -143,21 +143,29 @@ The working VBT had SHA-256 `407ceb6c1a3eafafc9aa441207bc23d69728465ebc046997d30
 
 **Do not publish OEM binaries, full SPI dumps, ME/BIOS regions or device-specific NVRAM unless you have verified redistribution rights and removed confidential/device-specific data.** This repository is configured to exclude them by default. See [OEM asset instructions](docs/oem-assets.md).
 
-## Restore and reproduce the working development snapshot
+## Combined V2 and IGD subsystem ID
 
-1. Use coreboot revision `8b0e34f90e08547cf19e550a43ed72f69c39d6ed` and initialize its required submodules and toolchain.
-2. Copy `config/coreboot.config` to `.config` in the coreboot checkout.
-3. Install `vendor-port/Kconfig` and `vendor-port/Kconfig.name` under `src/mainboard/nec/`. Copy the contents of `board-port/` into `src/mainboard/nec/versapro_vx2/`. Inspect diffs before overwriting existing files.
-4. Stage the target machine’s OEM inputs using the filenames and paths in [OEM assets](docs/oem-assets.md).
-5. Verify the [CardBus window and SD bus patch](patches/nec-vx2-cardbus-init-and-sd-bus.patch) with `git apply --check`, then apply it from the coreboot checkout. If the SD bus fix is already present, add `--exclude=src/device/pci_device.c` to both commands. The board's `ramstage.c` already contains the full late CardBus initialization.
-6. Run `make olddefconfig` and verify the resulting board, graphics and firmware-input settings.
-7. Build with `make -j"$(nproc)"` and inspect the complete log for errors.
-8. Flash only using a proven recovery workflow and only after confirming the target chip size/partition layout.
+Combined V2 boots on the NEC VX-2 with 128 MiB DVMT preallocation, an 8 MiB
+GGTT and a 256 MiB graphics aperture. Its OEM GOP and VBT are paired with
+a Post-GOP DXE driver for EDID and panel brightness handoff to the ACPI NVS
+OpRegion. The graphics NVS and ACPI _DSM extensions are included. The
+SWSCI handlers remain present in AML with the original disabled
+activation status.
 
-See [Development notes](docs/development-notes.md), [Test matrix](docs/test-matrix.md) and [Snapshot script](scripts/snapshot-local.sh).
+**Windows still reports Code 43 with Combined V2.** The new coreboot
+SID correction targets PCI `00:02.0`, DWORD `0x2C`, with expected value
+`0x60CF17AA` and Windows hardware ID
+`PCI\VEN_8086&DEV_5917&SUBSYS_60CF17AA`. The new build still requires
+hardware verification. Its effect on Code 43 is unknown.
+
+The source overlays, patches, complete sanitized configuration and
+EFI diagnostic sources are included. Follow the
+[Combined V2 build instructions](docs/combined-v2-build.md) and see the
+[IGD SID analysis](docs/igd-ssid.md) for the observed values and correction.
+
+See also the [development notes](docs/development-notes.md) and
+[hardware test matrix](docs/test-matrix.md).
 
 ## License and acknowledgments
 
 Documentation and original repository helper scripts can be released under a permissive license by the author. Coreboot, EDK2, libgfxinit and OEM components retain their respective licenses. This project is **not affiliated with NEC, Intel, Coreboot or MrChromebox**. Do not assume license rights to redistribute extracted OEM firmware.
-
-The captured config selects EDK2 ref `26.09.1` (observed checkout commit `57642656c3ddc5d55aeb2e8c3fb86c81276da4a7`) and configures memory-mapped TPM 2.0. The fixed build enumerates TPM 2.0 through the Linux TIS driver. The board directory was untracked in the source checkout. The current checkout's exact submodule revisions are recorded in `docs/submodules.txt`. Local changes outside the board sources and EDK2 workspace state may still affect reproducibility. This archive has not been independently rebuilt.
