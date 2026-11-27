@@ -53,6 +53,7 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 | Problem | Change or finding | Result |
 |---|---|---|
 | Internal panel stayed black with libgfxinit | eDP AUX and external DDC probes failed to read EDID. Switched to the NEC OEM GOP and matching VBT through EDK II. | **Resolved for the internal display**. External VGA works. HDMI detects the monitor but shows no image. |
+| Windows Intel graphics Code 43 with OEM GOP | Tested alternative FSP-GOP initialization on TestMB with EDK2 framebuffer handoff. | **Unsuccessful**: Windows still reports Code 43. [Details](docs/windows-graphics.md#fsp-gop-experiment--2026-11-27). |
 | Legacy Intel VGA ROM ran but produced no visible image | VBE modes `0x118` and `0x11b` lit the backlight without visible output. The same OEM GOP and VBT path provided the working display. | **Legacy path failed**. The GOP path showed the logo, graphical setup and UEFI Shell. |
 | USB boot was unreliable during bring-up | Tested again after adding the board's USB port configuration and PCIe bring-up changes. | **USB live boot confirmed**. USB devices worked on all five ports. |
 | Internal NVMe disappeared with trimmed Intel ME | Restored the full original ME. Tested first with HAP clear, then with HAP set and build-time ME cleaning disabled. | **NVMe boot confirmed with full ME and HAP set**. The earlier reboot loop has no confirmed root cause. |
