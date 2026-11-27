@@ -8,6 +8,10 @@
 
 **OEM IntelGopDriver + IntelGopVbt:** `NO_GFX_INIT=y`, `INTEL_GMA_ADD_VBT=y`, `EDK2_GOP_DRIVER=y` with MrChromebox EDK2. Build log: `Using GOP driver ExPLIT/NEC-GOP/IntelGopDriver.efi`. The EDK2 workspace had GOP (69,568 bytes) and VBT (4,608 bytes); CBFS listed `vbt.bin` with 4,608-byte uncompressed size and `fallback/payload`. A 16 MiB coreboot image was built. **On real hardware the coreboot logo appeared and UEFI Shell started.** SSD absent at time of observation.
 
+## Windows graphics compatibility (2026-11-27)
+
+Linux Intel graphics works with the hardware-verified SID correction. Windows reports Code 43 with Intel 31.0.101.2140 and VIDEO_TDR_FAILURE with the NEC 2019 driver. The [dedicated Windows graphics investigation](windows-graphics.md) records the firmware changes, diagnostic readings, driver A/B tests and open issues.
+
 ## Secure Boot follow-up
 
 The later 16 MiB build combined the full test-board ME and HAP descriptor with SMMSTORE and MrChromebox EDK II Secure Boot support. Its ROM layout reported a 512 KiB SMMSTORE region at `0x810000`. Ubuntu booted from NVMe through `shimx64.efi` with Secure Boot enabled and kernel lockdown active. The earlier graphics test was performed without an SSD. See the [test matrix](test-matrix.md) for current results.
