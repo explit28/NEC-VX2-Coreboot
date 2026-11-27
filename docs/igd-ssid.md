@@ -5,7 +5,7 @@
 | Original NEC BIOS PCI dump | `0x60CF17AA` | `17AA:60CF` |
 | EFI diagnostic 00 | `0x22128086` | `8086:2212` |
 | EFI diagnostic 01, Combined V2 | `0x221217AA` | `17AA:2212` |
-| SID fix target | `0x60CF17AA` | `17AA:60CF` |
+| EFI diagnostic 02, SID fix (hardware verified) | `0x60CF17AA` | `17AA:60CF` |
 
 Both diagnostics report host bridge GGC `0x04C1`, IGD MSAC `0x01` and
 an 8 MiB GGTT. They sample the machine after GOP. The OEM PCI dump
@@ -56,7 +56,4 @@ romstage contains the guarded 16-bit SID store and the existing
 `IgdDvmt50PreAlloc = 0x04` assignment. The SWSCI handlers are present in
 AML, and the activation status is unchanged.
 
-Windows Code 43 persists on Combined V2. The SID fix requires a cold-boot
-hardware check of the coreboot handoff log and EFI diagnostic readback,
-followed by Windows hardware ID `PCI\VEN_8086&DEV_5917&SUBSYS_60CF17AA`.
-The result of the Windows graphics driver test remains open.
+Windows Code 43 persists on Combined V2. EFI diagnostic 02 confirms `17AA:60CF` on hardware, with Linux graphics working. The Windows NEC 2019 driver causes VIDEO_TDR_FAILURE; manually selecting Intel 31.0.101.2140 restores boot but Code 43 remains. The SID correction is verified, not a Windows graphics fix. See [Windows graphics investigation](windows-graphics.md).
