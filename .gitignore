@@ -1,27 +1,5 @@
-# OEM/proprietary firmware and generated images
-*.rom
-*.bin
-*.efi
-*.ffs
-*.fd
-*.cap
-*.img
-*.dump/
-*.report.txt
-*.log
-*.key
-*.pem
-*.p12
-*.pfx
-*.nvram
-*.bak
-*.before-*
-# Coreboot outputs and workspace
-build/
-workspace/
-.cache/
-__pycache__/
-# local private artifacts
-private/
-original-firmware/
-oem-blobs/
+# Local coreboot build output and externally supplied firmware
+.config
+/build/
+/payloads/UEFIPAYLOAD.fd
+/3rdparty/blobs/mainboard/nec/vx-2/

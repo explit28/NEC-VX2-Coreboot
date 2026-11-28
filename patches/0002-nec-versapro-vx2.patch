@@ -1,0 +1,643 @@
+From c02f5c35dbc5a1d083bae7943be3b649d3877992 Mon Sep 17 00:00:00 2001
+From: ExPLIT <explit@mailbox.org>
+Date: Sat, 28 Nov 2026 03:53:24 +0100
+Subject: [PATCH] mb/nec: clean up VersaPro VX-2 upstream port
+
+Remove the experimental IGD NVS and OEM ACPI code, revert NEC-specific
+common-code changes, and keep the O2Micro setup board-scoped. Document
+the completed hardware validation reported for the final 16 MiB ROM.
+
+AI-generated
+
+Signed-off-by: ExPLIT <explit@mailbox.org>
+Change-Id: Ic47966b6d08122709f3d73ad5c3634956e62dcc8
+---
+ Documentation/mainboard/index.md              |  8 ++
+ Documentation/mainboard/nec/versapro_vx2.md   | 56 ++++++++++++
+ src/mainboard/nec/Kconfig                     | 17 ++++
+ src/mainboard/nec/Kconfig.name                |  4 +
+ src/mainboard/nec/versapro_vx2/Kconfig        | 32 +++++++
+ src/mainboard/nec/versapro_vx2/Kconfig.name   |  4 +
+ src/mainboard/nec/versapro_vx2/Makefile.mk    |  9 ++
+ src/mainboard/nec/versapro_vx2/acpi/ec.asl    | 33 +++++++
+ .../nec/versapro_vx2/acpi/superio.asl         |  4 +
+ src/mainboard/nec/versapro_vx2/board_info.txt |  4 +
+ src/mainboard/nec/versapro_vx2/bootblock.c    | 42 +++++++++
+ src/mainboard/nec/versapro_vx2/cardbus.c      | 34 ++++++++
+ src/mainboard/nec/versapro_vx2/devicetree.cb  | 86 +++++++++++++++++++
+ src/mainboard/nec/versapro_vx2/dsdt.asl       | 32 +++++++
+ .../nec/versapro_vx2/gma-mainboard.ads        | 18 ++++
+ src/mainboard/nec/versapro_vx2/gpio.c         | 37 ++++++++
+ src/mainboard/nec/versapro_vx2/gpio.h         |  7 ++
+ .../nec/versapro_vx2/memory_init_params.c     | 34 ++++++++
+ src/mainboard/nec/versapro_vx2/ramstage.c     | 10 +++
+ 19 files changed, 471 insertions(+)
+ create mode 100644 Documentation/mainboard/nec/versapro_vx2.md
+ create mode 100644 src/mainboard/nec/Kconfig
+ create mode 100644 src/mainboard/nec/Kconfig.name
+ create mode 100644 src/mainboard/nec/versapro_vx2/Kconfig
+ create mode 100644 src/mainboard/nec/versapro_vx2/Kconfig.name
+ create mode 100644 src/mainboard/nec/versapro_vx2/Makefile.mk
+ create mode 100644 src/mainboard/nec/versapro_vx2/acpi/ec.asl
+ create mode 100644 src/mainboard/nec/versapro_vx2/acpi/superio.asl
+ create mode 100644 src/mainboard/nec/versapro_vx2/board_info.txt
+ create mode 100644 src/mainboard/nec/versapro_vx2/bootblock.c
+ create mode 100644 src/mainboard/nec/versapro_vx2/cardbus.c
+ create mode 100644 src/mainboard/nec/versapro_vx2/devicetree.cb
+ create mode 100644 src/mainboard/nec/versapro_vx2/dsdt.asl
+ create mode 100644 src/mainboard/nec/versapro_vx2/gma-mainboard.ads
+ create mode 100644 src/mainboard/nec/versapro_vx2/gpio.c
+ create mode 100644 src/mainboard/nec/versapro_vx2/gpio.h
+ create mode 100644 src/mainboard/nec/versapro_vx2/memory_init_params.c
+ create mode 100644 src/mainboard/nec/versapro_vx2/ramstage.c
+
+diff --git a/Documentation/mainboard/index.md b/Documentation/mainboard/index.md
+index 0b0d52c7c5e426e95183179aa75a3e371eef89f5..cb9515417eb97b3d3cfd0b0abf7c0646ee801980 100644
+--- a/Documentation/mainboard/index.md
++++ b/Documentation/mainboard/index.md
+@@ -296,6 +296,14 @@ MS-7707 <msi/ms7707/ms7707.md>
+ MS-7D98 <msi/ms7d98/ms7d98.md>
+ ```
+ 
++## NEC
++
++```{toctree}
++:maxdepth: 1
++
++VersaPro VX-2 <nec/versapro_vx2.md>
++```
++
+ ## OCP
+ 
+ ```{toctree}
+diff --git a/Documentation/mainboard/nec/versapro_vx2.md b/Documentation/mainboard/nec/versapro_vx2.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..2e0df29716374bb9299da051f4a8de63413ae82f
+--- /dev/null
++++ b/Documentation/mainboard/nec/versapro_vx2.md
+@@ -0,0 +1,56 @@
++# NEC VersaPro VX-2
++
++The tested notebook uses the Compal LA-C423P mainboard, an Intel Core
++i5-8250U processor, Intel UHD Graphics 620 and two DDR4 SO-DIMM slots.
++The SPI flash is a 16 MiB Winbond W25Q128BV in a SOIC-8 package.
++
++The upstream-clean commit series was tested on the target hardware using
++the final 16 MiB ROM with SHA-256
++`5e66645f771b2eea21c8275990fc2287b6fc46f9ecb83a0a45d9564a5e0aed13`.
++The tester reports the hardware validation complete. The SD reader was
++tested with normal dynamic PCI bus assignment; no fixed bus number is
++required. CardBus window programming, 32-bit CardBus and 16-bit PCMCIA
++support were tested with the generic bridge path. The OEM GOP/VBT and
++EDK2 payload were also tested. Other previously supported hardware was
++included in the completed test; per-port measurements and device models
++were not provided for this documentation update.
++
++Firmware images require the board's flash descriptor, Intel ME and GbE
++regions. These board-specific binary inputs are not included with
++coreboot; obtain them from the target system's own firmware. No ROM or
++proprietary firmware blobs are distributed here.
++
++## Flashing
++
++Preserve and verify a backup of the original 16 MiB SPI image before
++flashing. An external SPI programmer was used successfully on the test
++system. Keep a verified recovery image available.
++
++## Earlier development-image test results
++
++The internal display and graphical UEFI setup, Linux and Windows boot,
++NVMe, SATA, external VGA, USB 2.0, USB SuperSpeed, keyboard input in
++firmware, Ethernet, audio, Bluetooth and suspend/resume were tested.
++An Intel AX200 WLAN adapter was tested, including resume. Secure Boot
++settings persist across restarts. Linux detects TPM 2.0. Battery
++operation and charging were also confirmed.
++
++SD, 32-bit CardBus and 16-bit PCMCIA data transfers were also tested under
++Linux and Windows on an earlier development image. The final upstream-ROM
++test above confirmed the supported reader and card types with the upstream
++PCI and generic CardBus code; the development-only fixed-bus workaround is
++not part of this port.
++
++## Known limitations
++
++- The test system produced no HDMI image with either coreboot or the NEC
++  firmware. Linux detects the monitor and reads its EDID with coreboot.
++- Linux i915 hardware acceleration works. Under Windows, Intel graphics
++  driver 31.0.101.2140 reports Code 43; the NEC 2019 graphics driver can
++  trigger `VIDEO_TDR_FAILURE`.
++- Windows Intel UHD 620 acceleration remains unavailable with the Intel
++  driver because of the known Code 43 issue. The completed hardware test
++  did not resolve that limitation.
++- The generic CardBus change also updates the Roda RK9 TI PCI7xx1 driver
++  to use the shared resource setter. Roda RK9 was not separately built
++  or hardware-tested as part of this work.
+diff --git a/src/mainboard/nec/Kconfig b/src/mainboard/nec/Kconfig
+new file mode 100644
+index 0000000000000000000000000000000000000000..6950a3543ec734661be22149f0990d5d6e2d2bd1
+--- /dev/null
++++ b/src/mainboard/nec/Kconfig
+@@ -0,0 +1,17 @@
++## SPDX-License-Identifier: GPL-2.0-only
++
++if VENDOR_NEC
++
++choice
++	prompt "Mainboard model"
++
++source "src/mainboard/nec/*/Kconfig.name"
++
++endchoice
++
++source "src/mainboard/nec/*/Kconfig"
++
++config MAINBOARD_VENDOR
++	default "NEC"
++
++endif # VENDOR_NEC
+diff --git a/src/mainboard/nec/Kconfig.name b/src/mainboard/nec/Kconfig.name
+new file mode 100644
+index 0000000000000000000000000000000000000000..19ebb8bbed11efdfead24db17e85d5ce722bbaba
+--- /dev/null
++++ b/src/mainboard/nec/Kconfig.name
+@@ -0,0 +1,4 @@
++## SPDX-License-Identifier: GPL-2.0-only
++
++config VENDOR_NEC
++	bool "NEC"
+diff --git a/src/mainboard/nec/versapro_vx2/Kconfig b/src/mainboard/nec/versapro_vx2/Kconfig
+new file mode 100644
+index 0000000000000000000000000000000000000000..33a43f82fa95278da68adea82e11d74b867e0e42
+--- /dev/null
++++ b/src/mainboard/nec/versapro_vx2/Kconfig
+@@ -0,0 +1,32 @@
++## SPDX-License-Identifier: GPL-2.0-only
++# NEC VersaPro VX-2 / LA-C423P.
++
++config BOARD_NEC_VERSAPRO_VX2
++	select MAINBOARD_USES_IFD_GBE_REGION
++	select SOC_INTEL_KABYLAKE
++	select BOARD_ROMSIZE_KB_16384
++	select SYSTEM_TYPE_LAPTOP
++	select HAVE_ACPI_TABLES
++	select MAINBOARD_HAS_LIBGFXINIT
++	select GFX_GMA_IGNORE_PRESENCE_STRAPS
++	select MAINBOARD_HAS_TPM2
++	select MEMORY_MAPPED_TPM
++
++if BOARD_NEC_VERSAPRO_VX2
++
++config MAINBOARD_DIR
++	default "nec/versapro_vx2"
++
++config MAINBOARD_PART_NUMBER
++	default "VersaPro VX-2 LA-C423P"
++
++config MAINBOARD_VERSION
++	default "1.0"
++
++config DIMM_MAX
++	default 2
++
++config DIMM_SPD_SIZE
++	default 512
++
++endif # BOARD_NEC_VERSAPRO_VX2
+diff --git a/src/mainboard/nec/versapro_vx2/Kconfig.name b/src/mainboard/nec/versapro_vx2/Kconfig.name
+new file mode 100644
+index 0000000000000000000000000000000000000000..b9dc716eec7fe56eeb43215f1f5e0dbe27c36492
+--- /dev/null
++++ b/src/mainboard/nec/versapro_vx2/Kconfig.name
+@@ -0,0 +1,4 @@
++## SPDX-License-Identifier: GPL-2.0-only
++
++config BOARD_NEC_VERSAPRO_VX2
++	bool "VersaPro VX-2 (LA-C423P)"
+diff --git a/src/mainboard/nec/versapro_vx2/Makefile.mk b/src/mainboard/nec/versapro_vx2/Makefile.mk
+new file mode 100644
+index 0000000000000000000000000000000000000000..0bf6509b02c6d46f3586af6d73a5e36878129a77
+--- /dev/null
++++ b/src/mainboard/nec/versapro_vx2/Makefile.mk
+@@ -0,0 +1,9 @@
++## SPDX-License-Identifier: GPL-2.0-only
++# NEC VersaPro VX-2 / LA-C423P board-specific stages.
++
++bootblock-y += bootblock.c
++romstage-y += memory_init_params.c
++ramstage-y += gpio.c
++ramstage-y += ramstage.c
++ramstage-y += cardbus.c
++ramstage-$(CONFIG_MAINBOARD_USE_LIBGFXINIT) += gma-mainboard.ads
+diff --git a/src/mainboard/nec/versapro_vx2/acpi/ec.asl b/src/mainboard/nec/versapro_vx2/acpi/ec.asl
+new file mode 100644
+index 0000000000000000000000000000000000000000..02dff9591e11e107436a8d9f9e14838a2729f27c
+--- /dev/null
++++ b/src/mainboard/nec/versapro_vx2/acpi/ec.asl
+@@ -0,0 +1,33 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * NEC stock ECDT (TP-N28): EC at \_SB.PCI0.LPCB.EC,
++ * command/status port 0x66, data port 0x62, GPE 0x50.
++ * EC fields, battery, thermal and vendor SMI methods are not yet ported.
++ * Included automatically by src/soc/intel/skylake/acpi/lpc.asl.
++ */
++Device (EC)
++{
++	Name (_HID, EisaId ("PNP0C09"))
++	Name (_UID, 0)
++	Name (_GPE, 0x50)
++	/* DCWL is bit 5 at 0xFE80013A in the OEM EC memory-mapped region. */
++	OperationRegion (WLER, SystemMemory, 0xFE80013A, 1)
++	Field (WLER, ByteAcc, NoLock, Preserve)
++	{
++		WLRG, 8
++	}
++
++	Method (_INI, 0, Serialized)
++	{
++		Store (WLRG, Local0)
++		If (LNotEqual (Local0, 0xFF))
++		{
++			Or (Local0, 0x20, WLRG)
++		}
++	}
++	Name (_CRS, ResourceTemplate ()
++	{
++		IO (Decode16, 0x62, 0x62, 0x01, 0x01)
++		IO (Decode16, 0x66, 0x66, 0x01, 0x01)
++	})
++}
+diff --git a/src/mainboard/nec/versapro_vx2/acpi/superio.asl b/src/mainboard/nec/versapro_vx2/acpi/superio.asl
+new file mode 100644
+index 0000000000000000000000000000000000000000..2d3d97eaa7884fddf0582a894226f790d7698977
+--- /dev/null
++++ b/src/mainboard/nec/versapro_vx2/acpi/superio.asl
+@@ -0,0 +1,4 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++
++/* Generic PS/2 controller ACPI definition */
++#include <drivers/pc80/pc/ps2_controller.asl>
+diff --git a/src/mainboard/nec/versapro_vx2/board_info.txt b/src/mainboard/nec/versapro_vx2/board_info.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..5b0cc1b779753c59af9ff7ada4187b7f20e6c056
+--- /dev/null
++++ b/src/mainboard/nec/versapro_vx2/board_info.txt
+@@ -0,0 +1,4 @@
++Category: laptop
++ROM package: SOIC-8
++ROM protocol: SPI
++ROM socketed: n
+diff --git a/src/mainboard/nec/versapro_vx2/bootblock.c b/src/mainboard/nec/versapro_vx2/bootblock.c
+new file mode 100644
+index 0000000000000000000000000000000000000000..1a2a496dd6628b908a5c7d001756ce9d104484cb
+--- /dev/null
++++ b/src/mainboard/nec/versapro_vx2/bootblock.c
+@@ -0,0 +1,42 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++
++/*
++ * NEC VersaPro VX-2 / LA-C423P.
++ *
++ * Early native-function muxing for the NPCE388N LPC connection,
++ * based on pads observed under the NEC factory firmware.
++ *
++ * This does NOT attempt any vendor EC command sequence or change
++ * unknown power/reset GPIO outputs.
++ */
++#include <bootblock_common.h>
++#include <intelblocks/lpc_lib.h>
++#include <soc/gpio.h>
++
++static const struct pad_config early_gpio_table[] = {
++	/* EC LPC interface: RCIN#, LAD[0:3], LFRAME#, SERIRQ. */
++	PAD_CFG_NF(GPP_A0, NONE, DEEP, NF1),
++	PAD_CFG_NF(GPP_A1, NATIVE, DEEP, NF1),
++	PAD_CFG_NF(GPP_A2, NATIVE, DEEP, NF1),
++	PAD_CFG_NF(GPP_A3, NATIVE, DEEP, NF1),
++	PAD_CFG_NF(GPP_A4, NATIVE, DEEP, NF1),
++	PAD_CFG_NF(GPP_A5, NONE, DEEP, NF1),
++	PAD_CFG_NF(GPP_A6, NONE, DEEP, NF1),
++
++	/* CLKRUN# and two LPC clock outputs. */
++	PAD_CFG_NF(GPP_A8, NONE, DEEP, NF1),
++	PAD_CFG_NF(GPP_A9, NATIVE, DEEP, NF1),
++	PAD_CFG_NF(GPP_A10, NATIVE, DEEP, NF1),
++
++	/* DDR4 SPD SMBus: preserve the observed factory pad settings. */
++	_PAD_CFG_STRUCT(GPP_C0, PAD_FUNC(NF1) | PAD_RESET(DEEP) |
++		PAD_TRIG(OFF) | PAD_BUF(TX_DISABLE) | (1 << 1), 0),
++	_PAD_CFG_STRUCT(GPP_C1, PAD_FUNC(NF1) | PAD_RESET(DEEP) |
++		PAD_TRIG(OFF) | PAD_BUF(TX_DISABLE) | (1 << 1), 0),
++};
++
++void bootblock_mainboard_early_init(void)
++{
++	gpio_configure_pads(early_gpio_table, ARRAY_SIZE(early_gpio_table));
++	lpc_open_mmio_window(0xfe800000, 0x10000);
++}
+diff --git a/src/mainboard/nec/versapro_vx2/cardbus.c b/src/mainboard/nec/versapro_vx2/cardbus.c
+new file mode 100644
+index 0000000000000000000000000000000000000000..775bd3e67c515a92f854ccfc203359933f556267
+--- /dev/null
++++ b/src/mainboard/nec/versapro_vx2/cardbus.c
+@@ -0,0 +1,34 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++
++#include <bootstate.h>
++#include <device/pci.h>
++
++/* Apply the board's tested OEM setup to the O2Micro CardBus controller. */
++static void configure_cardbus(void *unused)
++{
++	const struct device *root_port = pcidev_path_on_root(PCI_DEVFN(0x1c, 1));
++	if (!root_port || !root_port->enabled || root_port->vendor != 0x8086 ||
++	    root_port->device != 0x9d11 || !root_port->downstream)
++		return;
++
++	const struct device *cardbus = pcidev_path_behind(root_port->downstream, PCI_DEVFN(0, 0));
++	if (!cardbus || !cardbus->enabled || cardbus->vendor != 0x1217 ||
++	    cardbus->device != 0x8134)
++		return;
++
++	/* Controller-specific configuration from the NEC firmware sequence. */
++	pci_write_config8(cardbus, 0xd3, pci_read_config8(cardbus, 0xd3) & 0x7f);
++	pci_write_config32(cardbus, 0x40, 0x60cd17aa);
++	pci_write_config8(cardbus, 0xf6, (pci_read_config8(cardbus, 0xf6) & 0xf3) | 0x08);
++	pci_write_config8(cardbus, 0xdb, pci_read_config8(cardbus, 0xdb) | 0x40);
++	pci_write_config8(cardbus, 0xe8, pci_read_config8(cardbus, 0xe8) & 0xf3);
++	pci_write_config8(cardbus, 0x90, pci_read_config8(cardbus, 0x90) | 0x03);
++	pci_write_config8(cardbus, 0xf4, pci_read_config8(cardbus, 0xf4) | 0x02);
++	pci_write_config8(cardbus, 0x91, pci_read_config8(cardbus, 0x91) | 0x01);
++	pci_write_config8(cardbus, 0xdc, pci_read_config8(cardbus, 0xdc) & 0xbf);
++	pci_write_config8(cardbus, 0xf1, pci_read_config8(cardbus, 0xf1) | 0x70);
++	pci_write_config8(cardbus, 0xf5, (pci_read_config8(cardbus, 0xf5) & 0xc3) | 0x34);
++	pci_write_config8(cardbus, 0xd3, pci_read_config8(cardbus, 0xd3) | 0x80);
++}
++
++BOOT_STATE_INIT_ENTRY(BS_PAYLOAD_BOOT, BS_ON_ENTRY, configure_cardbus, NULL);
+diff --git a/src/mainboard/nec/versapro_vx2/devicetree.cb b/src/mainboard/nec/versapro_vx2/devicetree.cb
+new file mode 100644
+index 0000000000000000000000000000000000000000..49d33c2eab374a96ba346ae90952935d89ad10e8
+--- /dev/null
++++ b/src/mainboard/nec/versapro_vx2/devicetree.cb
+@@ -0,0 +1,86 @@
++# SPDX-License-Identifier: GPL-2.0-only
++# NEC VersaPro VX-2 / LA-C423P
++chip soc/intel/skylake
++	# External USB 2.0 ports. Overcurrent mapping from NEC BIOS 1.21.
++	# Use provisional PHY tuning until the OEM values are verified.
++	register "usb2_ports" = "{
++		[0] = USB2_PORT_MID(OC0), /* Rear */
++		[1] = USB2_PORT_MID(OC0), /* Right upper */
++		[2] = USB2_PORT_MID(OC1), /* Right middle */
++		[3] = USB2_PORT_MID(OC1), /* Right lower */
++		[4] = USB2_PORT_MID(OC2), /* Left */
++		[7] = USB2_PORT_MID(OC_SKIP), /* AX200 Bluetooth */
++	}"
++
++	# USB3 overcurrent mapping from NEC BIOS 1.21.
++	register "usb3_ports" = "{
++		[0] = { .enable = 1, .ocpin = OC0 },
++		[1] = { .enable = 1, .ocpin = OC0 },
++		[2] = { .enable = 1, .ocpin = OC1 },
++		[3] = { .enable = 1, .ocpin = OC1 },
++		[4] = { .enable = 1, .ocpin = OC2 },
++	}"
++
++	device domain 0 on
++		device ref igpu on
++			subsystemid 0x17aa 0x60cf
++			register "gfx" = "GMA_STATIC_DISPLAYS(0)"
++			register "panel_cfg" = "{
++				.up_delay_ms = 200,
++				.down_delay_ms = 50,
++				.cycle_delay_ms = 600,
++				.backlight_on_delay_ms = 1,
++				.backlight_off_delay_ms = 200,
++				.backlight_pwm_hz = 200,
++			}"
++		end
++		device ref sa_thermal on end
++		device ref imgu off end
++		device ref thermal on end
++		# CLKREQ routing from the OEM FIA dump. CLKOUT_SRC numbers assume
++		# the Intel ICC default mapping and need hardware verification.
++		device ref pcie_rp1 on end
++		# CardBus
++		device ref pcie_rp2 on
++			register "PcieRpClkReqSupport[1]" = "true"
++			register "PcieRpClkReqNumber[1]" = "4"
++			register "PcieRpClkSrcNumber[1]" = "4"
++		end
++		# WLAN
++		device ref pcie_rp4 on
++			register "PcieRpClkReqSupport[3]" = "true"
++			register "PcieRpClkReqNumber[3]" = "1"
++			register "PcieRpClkSrcNumber[3]" = "1"
++		end
++		# NVMe
++		device ref pcie_rp5 on
++			register "PcieRpClkReqSupport[4]" = "true"
++			register "PcieRpClkReqNumber[4]" = "5"
++			register "PcieRpClkSrcNumber[4]" = "5"
++		end
++		device ref pcie_rp9 on end
++		# SD card reader: the OEM PCI dump and ACPI _ADR identify 00:1d.3.
++		device ref pcie_rp12 on
++			register "PcieRpClkReqSupport[11]" = "true"
++			register "PcieRpClkReqNumber[11]" = "2"
++			register "PcieRpClkSrcNumber[11]" = "2"
++		end
++		device ref south_xhci on end
++		device ref sata on
++			# OEM AHCI implemented-port mask 0x7.
++			register "SataPortsEnable[0]" = "1"
++			register "SataPortsEnable[1]" = "1"
++			register "SataPortsEnable[2]" = "1"
++		end
++		device ref lpc_espi on
++			register "serirq_mode" = "SERIRQ_CONTINUOUS"
++			register "lpc_ioe" = "LPC_IOE_EC_62_66 | LPC_IOE_KBC_60_64 | LPC_IOE_COMA_EN"
++			chip drivers/pc80/tpm
++				device pnp 0c31.0 on end
++			end
++		end
++		device ref hda on end
++		device ref smbus on end
++		device ref gbe on end
++	end
++end
+diff --git a/src/mainboard/nec/versapro_vx2/dsdt.asl b/src/mainboard/nec/versapro_vx2/dsdt.asl
+new file mode 100644
+index 0000000000000000000000000000000000000000..4aa88ba2a460b7d31f96b541356b648b28b42275
+--- /dev/null
++++ b/src/mainboard/nec/versapro_vx2/dsdt.asl
+@@ -0,0 +1,32 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * NEC VersaPro VX-2 / LA-C423P
++ * Mainboard ACPI tables.
++ * Minimal EC is included automatically by Skylake lpc.asl.
++ * Battery, fan and hotkeys are not yet implemented.
++ */
++
++#include <acpi/acpi.h>
++
++DefinitionBlock(
++	"dsdt.aml",
++	"DSDT",
++	ACPI_DSDT_REV_2,
++	OEM_ID,
++	ACPI_TABLE_CREATOR,
++	COREBOOT_OEM_REVISION
++)
++{
++	#include <acpi/dsdt_top.asl>
++	#include <soc/intel/common/block/acpi/acpi/platform.asl>
++	#include <soc/intel/common/block/acpi/acpi/globalnvs.asl>
++	#include <cpu/intel/common/acpi/cpu.asl>
++
++	Device (\_SB.PCI0)
++	{
++		#include <soc/intel/skylake/acpi/systemagent.asl>
++		#include <soc/intel/skylake/acpi/pch.asl>
++		#include <drivers/intel/gma/acpi/default_brightness_levels.asl>
++	}
++	#include <southbridge/intel/common/acpi/sleepstates.asl>
++}
+diff --git a/src/mainboard/nec/versapro_vx2/gma-mainboard.ads b/src/mainboard/nec/versapro_vx2/gma-mainboard.ads
+new file mode 100644
+index 0000000000000000000000000000000000000000..8eff20b2c2812f5212e7daf5effa14caa8e42639
+--- /dev/null
++++ b/src/mainboard/nec/versapro_vx2/gma-mainboard.ads
+@@ -0,0 +1,18 @@
++-- SPDX-License-Identifier: GPL-2.0-or-later
++
++with HW.GFX.GMA;
++with HW.GFX.GMA.Display_Probing;
++
++use HW.GFX.GMA;
++use HW.GFX.GMA.Display_Probing;
++
++private package GMA.Mainboard is
++
++   ports : constant Port_List :=
++     (eDP,
++      HDMI1,
++      DP2,
++      HDMI2,
++      others => Disabled);
++
++end GMA.Mainboard;
+diff --git a/src/mainboard/nec/versapro_vx2/gpio.c b/src/mainboard/nec/versapro_vx2/gpio.c
+new file mode 100644
+index 0000000000000000000000000000000000000000..282544ba7081756faf767076d8c9c271e0a8f8e1
+--- /dev/null
++++ b/src/mainboard/nec/versapro_vx2/gpio.c
+@@ -0,0 +1,37 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * NEC VersaPro VX-2: conservative post-memory display pad configuration.
++ * GPP_E17 matches the original NEC pad snapshot. That snapshot does not
++ * establish an electrical power-on sequence for unknown GPIO outputs.
++ */
++#include <soc/gpio.h>
++#include "gpio.h"
++
++static const struct pad_config nec_late_gpio_table[] = {
++	/* SLP_WLAN#: match the NEC factory pad configuration. */
++	_PAD_CFG_STRUCT(GPD9, PAD_FUNC(NF1) | PAD_TRIG(OFF) |
++		PAD_BUF(RX_DISABLE), 0),
++
++	/* OEM NEC native-function display pads; T480/T480s/T580 use same pads. */
++	/* DDPB_HPD */
++	_PAD_CFG_STRUCT(GPP_E13, 0x84000500, 0x00000025),
++	/* DDPC_HPD */
++	_PAD_CFG_STRUCT(GPP_E14, 0x84000500, 0x00000026),
++	/* OEM DDPB clock and data pads. */
++	_PAD_CFG_STRUCT(GPP_E18, 0x44000702, 0),
++	_PAD_CFG_STRUCT(GPP_E19, 0x44000702, PAD_PULL(DN_20K)),
++	/* DDPC_CTRLCLK */
++	_PAD_CFG_STRUCT(GPP_E20, 0x44000702, 0x0000002c),
++	/* DDPC_CTRLDATA */
++	_PAD_CFG_STRUCT(GPP_E21, 0x44000702, 0x0000102d),
++
++	/* EDP_HPD: original DW0 0x84000502, DW1 0x00000000 */
++	_PAD_CFG_STRUCT(GPP_E17, PAD_FUNC(NF1) | PAD_RESET(PLTRST) |
++		PAD_TRIG(OFF) | PAD_BUF(TX_DISABLE) | (1 << 1), 0),
++};
++
++void mainboard_configure_late_gpios(void)
++{
++	gpio_configure_pads(nec_late_gpio_table,
++			    ARRAY_SIZE(nec_late_gpio_table));
++}
+diff --git a/src/mainboard/nec/versapro_vx2/gpio.h b/src/mainboard/nec/versapro_vx2/gpio.h
+new file mode 100644
+index 0000000000000000000000000000000000000000..697594f04480487a17edd428822a92eb7a6c94e6
+--- /dev/null
++++ b/src/mainboard/nec/versapro_vx2/gpio.h
+@@ -0,0 +1,7 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++#ifndef NEC_VX2_GPIO_H
++#define NEC_VX2_GPIO_H
++
++void mainboard_configure_late_gpios(void);
++
++#endif /* NEC_VX2_GPIO_H */
+diff --git a/src/mainboard/nec/versapro_vx2/memory_init_params.c b/src/mainboard/nec/versapro_vx2/memory_init_params.c
+new file mode 100644
+index 0000000000000000000000000000000000000000..48526f4e0a5122d267f8763962b38ee2b6637393
+--- /dev/null
++++ b/src/mainboard/nec/versapro_vx2/memory_init_params.c
+@@ -0,0 +1,34 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * NEC VersaPro VX-2 / LA-C423P
++ * Board-specific FSP-M configuration.
++ * SPD addresses and channel allocation verified from stock firmware.
++ */
++
++#include <soc/romstage.h>
++#include <soc/soc_chip.h>
++#include <spd_bin.h>
++
++void mainboard_memory_init_params(FSPM_UPD *mupd)
++{
++	FSP_M_CONFIG *mem_cfg = &mupd->FspmConfig;
++
++	/* Reserve 128 MiB for integrated graphics as required by the test setup. */
++	mem_cfg->IgdDvmt50PreAlloc = IGD_SM_128MB;
++
++	/* DDR4 channel configuration from the board's factory setup. */
++	mem_cfg->DqPinsInterleaved = true;
++	mem_cfg->CaVrefConfig = 2;
++	mem_cfg->MemorySpdDataLen = CONFIG_DIMM_SPD_SIZE;
++
++	/* Factory DMI and SPD serial numbers: channel A 0x50, channel B 0x52. */
++	struct spd_block blk = {
++		.addr_map = { 0x50, 0x52 }
++	};
++
++	get_spd_smbus(&blk);
++	dump_spd_info(&blk);
++
++	mem_cfg->MemorySpdPtr00 = (uintptr_t)blk.spd_array[0];
++	mem_cfg->MemorySpdPtr10 = (uintptr_t)blk.spd_array[1];
++}
+diff --git a/src/mainboard/nec/versapro_vx2/ramstage.c b/src/mainboard/nec/versapro_vx2/ramstage.c
+new file mode 100644
+index 0000000000000000000000000000000000000000..3f77bc4a20d32cd1553b7d182e261ad4691b555e
+--- /dev/null
++++ b/src/mainboard/nec/versapro_vx2/ramstage.c
+@@ -0,0 +1,10 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* NEC VersaPro VX-2: pre-FSP-S GPIO hook. */
++#include <soc/ramstage.h>
++#include "gpio.h"
++
++void mainboard_silicon_init_params(FSP_S_CONFIG *params)
++{
++	params->PcieRpFunctionSwap = 0;
++	mainboard_configure_late_gpios();
++}
