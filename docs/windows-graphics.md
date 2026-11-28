@@ -1,6 +1,6 @@
 # Windows graphics compatibility — Intel UHD 620
 
-Status: 2026-11-27. Open firmware compatibility issue; Linux graphics works, Windows native Intel graphics reports Device Manager Code 43 with the 2025 driver. The older NEC driver can cause VIDEO_TDR_FAILURE (0x116). Windows boot and GOP output are not evidence of working Windows acceleration.
+Status: 2026-11-28. Open firmware compatibility issue; Linux graphics works, Windows native Intel graphics reports Device Manager Code 43 with the 2025 driver. The older NEC driver can cause VIDEO_TDR_FAILURE (0x116). Windows boot and GOP output are not evidence of working Windows acceleration.
 
 ## Hardware and test matrix
 
@@ -14,14 +14,14 @@ IGD PCI 00:02.0, 8086:5917; OEM subsystem 17AA:60CF. Results below are hardware 
 | Combined V2 | 17AA:2212 | Intel 2025 | Code 43 |
 | SID fix | 17AA:60CF | NEC 2019 | Both internal and external display cycle black/bright; VIDEO_TDR_FAILURE |
 | SID fix | 17AA:60CF | Intel 2025 | Code 43 after manual switch in Safe Mode and normal reboot |
-| SID fix | 17AA:60CF | Linux i915 | Working (tester confirmed); no new benchmark recorded |
+| SID fix | 17AA:60CF | Linux i915 | Working (tester confirmed); OpenGL 4.6 hardware acceleration confirmed on OEM-GOP firmware |
 | FSP-GOP TestMB | 17AA:60CF (configured) | Windows Intel driver (version not rechecked) | Code 43; same reported behavior as OEM GOP |
 
 Safe Mode works. The external monitor exhibited the same Windows failure; this is not evidence that HDMI specifically has been repaired. Earlier HDMI-specific hardware issue remains separate.
 
 ## Development history and retained changes
 
-- libgfxinit failed to obtain panel EDID over AUX; legacy VBIOS produced no visible pixels. OEM GOP/VBT through MrChromebox EDK2 restores graphical preboot output. Keep this path as the known working preboot reference; a new isolated libgfxinit experiment is planned.
+- libgfxinit failed to obtain panel EDID over AUX; legacy VBIOS produced no visible pixels. OEM GOP/VBT through MrChromebox EDK2 restores graphical preboot output. Keep this path as the known working preboot reference; the subsequent native libgfxinit experiment restored preboot output but introduced a Linux regression on the complete notebook.
 - OEM GGC 0x01C1 corresponds to 32 MiB preallocation and 8 MiB GGTT; 128 MiB was selected deliberately for testing, not claimed to be the OEM physical allocation. FSP-M IgdDvmt50PreAlloc=0x04 produces GGC 0x04C1. Increasing DVMT did not fix Code 43.
 - Early DSM/PCON and subsystem experiments did not resolve Code 43; earlier DWORD PreMem subsystem write caused Windows regression, then reverted.
 - OEM compatibility V1/V2 added board-scoped graphics AML and CBMEM-backed graphics state, partial DSM functions, guarded SWSCI-related methods. V2 full build tested: Code 43 unchanged. SWSCI is deliberately not activated.
@@ -72,7 +72,15 @@ VBS/HVCI/hypervisor disabled test on an earlier build did not resolve Code 43; V
 
 Changing the GOP initialization path alone did not resolve Code 43. This weakens the hypothesis that the EDK2 OEM GOP path alone is responsible; it does not exclude shared FSP policy, ACPI, GPU state or differences in EDID handoff. Linux acceleration was confirmed separately on the earlier OEM-GOP firmware (Mesa Intel UHD 620, OpenGL 4.6, Accelerated: yes); it has not been independently retested on this FSP build.
 
-Next experiment: native libgfxinit, with both hardware GOP paths disabled, retaining the same TestMB inputs and board policy. Investigate the historical eDP AUX/EDID failure before building; do not claim a successful Windows test until hardware validation.
+The native libgfxinit follow-up is documented below.
+
+## Native libgfxinit and HAP follow-up — 2026-11-28
+
+- Native libgfxinit TestMB build: coreboot `0c42e2ee1fe1179bbb973765493842141b228686`, libgfxinit `7ac11bc0747628aec87d074643b54038aa08e1d4`, BIOS version 26.09. Both eDP and VGA output worked on the test board, but Windows still reported Code 43. The earlier AUX/EDID failure no longer prevented display output; the exact responsible upstream change is not established. OEM GOP, FSP-GOP and legacy VGA ROM execution were disabled. EDK2 used the native framebuffer; the generic GOP path lacks EDID protocols used by the panel DXE.
+- Full VX-2 notebook: native libgfxinit produced a Linux regression. The photographed i915 log repeatedly reports `flip_done timed out` and `commit wait timed out` for pipe A, plane 1A and eDP-1 after reaching graphical.target. The root cause is not established. Successful firmware display output is not evidence of a successful Linux graphics handoff.
+- HAP/ME experiment: the original TestMB firmware is `VX-2_testmb.rom`. The intended controlled comparison preserves the OEM BIOS, full ME and GbE and changes only the descriptor HAP bit. The tester reports that HAP has no effect on Code 43 and that graphics works normally on the original NEC BIOS with HAP disabled (bit clear). The precise outcomes for OEM HAP set and coreboot HAP clear were not separately stated, and no runtime ME status or final binary comparison was supplied. Therefore record the tester's negative conclusion without claiming a fully verified four-way A/B matrix or excluding every ME/coreboot interaction.
+- Decision: return to the stable OEM Intel GOP + original VBT in EDK2, with the existing consolidated upstream review [#97759](https://review.coreboot.org/c/coreboot/+/97759) as the source baseline. Do not promote the experimental FSP-GOP or libgfxinit configuration. Keep the experimental artifacts for diagnosis. The rollback is requested, not yet verified; no new Gerrit change is needed.
+- Windows Code 43 remains open. Prioritize OEM-versus-coreboot comparisons of ACPI/OpRegion, system-agent policy, PCI resources, interrupts and GPU state rather than repeating the three graphics initialization experiments.
 
 ## Open investigation
 
