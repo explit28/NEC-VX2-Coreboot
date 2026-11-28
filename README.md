@@ -19,7 +19,7 @@ The full NEC VX-2 notebook hardware test was reported completed on the cleaned-u
 - The SD reader uses dynamic PCI bus allocation; the OEM snapshot locates it behind 00:1d.3. Historical physical root-port mapping ambiguities remain; no fixed bus 08 workaround is retained.
 - Experimental IGD NVS, DSM/SWSCI, pre-FSP subsystem-ID override and NEC-specific common graphics debug code were removed from the upstream submission, not from the experimental development snapshot.
 
-Test ROM: 16,777,216 bytes, SHA-256 `5e66645f771b2eea21c8275990fc2287b6fc46f9ecb83a0a45d9564a5e0aed13`. Build report: coreboot 26.09, FSP 3.7.6.0, EDK2 `44b9aa144a5ff5ceb843245388fb00c87a06895f`. Tested source commits: CardBus `94fe8fa9504b97b0bebedbe0d20827d86e886526`, NEC `3e34346260337fd245533e47a40da18ffd45cf12`. Later NEC documentation-only change and commit-message corrections produced the submitted commits. The final message-only corrections preserved both tree hashes. Reported IFD/GbE/full ME match the notebook blobs; IFD/FMAP/CBFS validation and local lint/checkpatch passed. The ROM and build artifacts have not been independently inspected for this documentation update.
+Test ROM: 16,777,216 bytes, SHA-256 `5e66645f771b2eea21c8275990fc2287b6fc46f9ecb83a0a45d9564a5e0aed13`. Build report: coreboot 26.09, FSP 3.7.6.0, EDK2 `44b9aa144a5ff5ceb843245388fb00c87a06895f`. The tested source revisions were CardBus `94fe8fa9504b97b0bebedbe0d20827d86e886526` (tree `9f07f9069ebc09b47abf22d0db31f958e25b72ae`) and NEC `3e34346260337fd245533e47a40da18ffd45cf12` (tree `d5e6493919820ab1671e49b71811be066d96be89`). Final Gerrit revisions are [#97774](https://review.coreboot.org/c/coreboot/+/97774), CardBus `9acf4b12a5e9ee5f1b96c64e27deeb23a24f3b70`, and [#97759](https://review.coreboot.org/c/coreboot/+/97759), NEC `9430870094bdd7754ea89c05441d7b8c54db2621`; the NEC revision depends on #97774. The CardBus final tree matches the tested tree; NEC changes after the tested source were documentation-only. The final message-footer correction changed neither submitted tree. The ROM and build artifacts have not been independently inspected for this documentation update.
 
 The GitHub source/configuration snapshot remains the experimental development version, not a byte-for-byte copy of the tested upstream source. Use the Gerrit changes for the upstream code. No ROM or proprietary blobs are published by this update.
 
@@ -29,21 +29,7 @@ The GitHub source/configuration snapshot remains the experimental development ve
 
 ![NEC VersaPro VX-2 EDK2 boot manager](docs/images/NEC_VersaPro_VX-2_Coreboot_Bootmanager.jpg)
 
-## Final upstream hardware test — 2026-11-28
-
-The user reports completion of the full hardware test using the final 16 MiB upstream ROM (SHA-256 `5e66645f771b2eea21c8275990fc2287b6fc46f9ecb83a0a45d9564a5e0aed13`). The ROM itself and all proprietary firmware components remain local and are not published here.
-
-The reported final-image test covered the OEM Intel GOP/VBT with the EDK2 payload; the SD reader with dynamic PCI bus assignment; the generic CardBus window path; 32-bit CardBus and 16-bit PCMCIA support; and the notebook's previously supported hardware. The actual SD bus number, per-port measurements, and individual device/card models were not supplied, so this repository does not claim them. The earlier development-only bus-08 override is not part of the upstream port.
-
-The Intel UHD 620 Windows acceleration issue remains: Windows reports Code 43. The full test did not resolve that known limitation. The NEC 2019 graphics driver has historically caused `VIDEO_TDR_FAILURE`. No new Code 43 analysis is included in this update.
-
-The source series is Coreboot base `096fd34d9ca95a267802c25ce697498d41243378`, generic CardBus fix `94fe8fa9504b97b0bebedbe0d20827d86e886526`, and NEC port `7ff147979f5e2e7b4d9245e8553f37a596d260ae`. The mainboard patch is the existing [Gerrit change #97759](https://review.coreboot.org/c/coreboot/+/97759), Change-ID `Ic47966b6d08122709f3d73ad5c3634956e62dcc8`. The CardBus change uses Change-ID `I9a9247b7294720b599f0af9e9f421c1186163093` ([Gerrit search](https://review.coreboot.org/q/I9a9247b7294720b599f0af9e9f421c1186163093)).
-
-The CardBus fix programs both base and inclusive limit registers for the two memory and two I/O windows, uses Coreboot resource allocation, validates 32-bit ranges/alignment, closes unused/invalid windows, and keeps Memory Window 0 prefetch. It contains no NEC or controller-ID special case. The SD reader remains on dynamic Coreboot bus assignment.
-
-Build provenance: Coreboot version `26.09`; EDK2 MrChromebox revision `44b9aa144a5ff5ceb843245388fb00c87a06895f`; `edk2-platforms` revision `4db2845d14425599238be86b8a73d288f7c0b4a6`; Kaby Lake FSP `3.7.6.0`. See [build provenance](docs/build-provenance.md), the [test matrix](docs/test-matrix.md), and the [Windows graphics record](docs/windows-graphics.md). The Roda RK9 TI CardBus-driver adjustment is source-only: Roda RK9 was not separately built or tested.
-
-The experimental IGD work and its historical findings remain in this repository. The cleaned upstream source series does not replace or overwrite those experiments. The source changes are represented by the separate [generic CardBus Gerrit change](https://review.coreboot.org/q/I9a9247b7294720b599f0af9e9f421c1186163093) and [NEC mainboard Gerrit change #97759](https://review.coreboot.org/c/coreboot/+/97759). No ROM or proprietary blobs are included.
+See [the detailed final upstream hardware test and provenance](docs/upstream-hardware-test.md).
 
 ## Hardware test status
 
