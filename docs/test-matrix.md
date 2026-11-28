@@ -1,23 +1,21 @@
 # Test matrix
 
-## Final upstream ROM — hardware test complete (2026-11-28)
+## Tested upstream review update — 2026-11-28
 
-The user reports the full hardware test completed with the 16 MiB ROM whose SHA-256 is `5e66645f771b2eea21c8275990fc2287b6fc46f9ecb83a0a45d9564a5e0aed13`. This is an attestation of the overall test, not a per-port data log.
+The full NEC VX-2 notebook hardware test was reported completed on the cleaned-up upstream test ROM. The tester reports continued support for the dynamically enumerated SD reader, 32-bit CardBus, 16-bit PCMCIA, OEM GOP/EDK2 and previously supported hardware. Individual measurements, exact SD bus number and card models were not supplied for this run. Windows Intel UHD 620 Code 43 remains unresolved; previously open HDMI and other unverified tests are not reclassified.
 
-| Area | Final-image status reported | Detail available |
-|---|---|---|
-| OEM GOP/VBT and EDK2 | Tested | No individual resolution or payload-console transcript supplied. |
-| SD reader `1217:8621` | Tested with dynamic PCI bus assignment | Exact bus number and observed upstream BDF not supplied. No fixed `0x08` requirement. |
-| Generic CardBus windows | Tested | Generic base/limit programming was in the tested source; no register dump or window sizes supplied. |
-| 32-bit CardBus | Tested | No final-image card model or transfer measurements supplied. |
-| 16-bit PCMCIA | Tested | No final-image card model or transfer measurements supplied. |
-| Previously supported board hardware | Included in the completed test | Per-device and per-port outcomes were not separately transcribed. |
-| Windows Intel UHD 620 acceleration | Known limitation remains | Windows still reports Code 43. |
-| Roda RK9 | Not tested | The generic commit updates its TI driver to call the shared setter, but no Roda build or hardware test was run. |
+- [Gerrit #97774](https://review.coreboot.org/c/coreboot/+/97774): generic CardBus bridge window limit programming, commit `9acf4b12a5e9ee5f1b96c64e27deeb23a24f3b70`.
+- [Gerrit #97759](https://review.coreboot.org/c/coreboot/+/97759): updated NEC board port, commit `9430870094bdd7754ea89c05441d7b8c54db2621`, dependent on #97774.
+- Both uploads succeeded according to the Git push output. Review and new CI approval remain pending; the previous Jenkins Verified+1 was removed as outdated.
+- The generic CardBus fix programs base and inclusive limit registers for both memory and both I/O windows, closes invalid/unassigned windows, and retains Memory Window 0 prefetch. The board-local O2Micro initialization remains. Roda RK9's TI CardBus path is also affected but was not separately built or hardware-tested.
+- The SD reader uses dynamic PCI bus allocation; the OEM snapshot locates it behind 00:1d.3. Historical physical root-port mapping ambiguities remain; no fixed bus 08 workaround is retained.
+- Experimental IGD NVS, DSM/SWSCI, pre-FSP subsystem-ID override and NEC-specific common graphics debug code were removed from the upstream submission, not from the experimental development snapshot.
 
-The final firmware was built as Coreboot `26.09` with OEM GOP/VBT and EDK2. Proprietary binaries and the complete ROM are not part of this repository. Earlier detailed rows below remain historical results from their documented development builds unless explicitly identified as final-upstream coverage.
+Test ROM: 16,777,216 bytes, SHA-256 `5e66645f771b2eea21c8275990fc2287b6fc46f9ecb83a0a45d9564a5e0aed13`. Build report: coreboot 26.09, FSP 3.7.6.0, EDK2 `44b9aa144a5ff5ceb843245388fb00c87a06895f`. Tested source commits: CardBus `94fe8fa9504b97b0bebedbe0d20827d86e886526`, NEC `3e34346260337fd245533e47a40da18ffd45cf12`. Later NEC documentation-only change and commit-message corrections produced the submitted commits. The final message-only corrections preserved both tree hashes. Reported IFD/GbE/full ME match the notebook blobs; IFD/FMAP/CBFS validation and local lint/checkpatch passed. The ROM and build artifacts have not been independently inspected for this documentation update.
 
-## Historical and development-build test observations
+The GitHub source/configuration snapshot remains the experimental development version, not a byte-for-byte copy of the tested upstream source. Use the Gerrit changes for the upstream code. No ROM or proprietary blobs are published by this update.
+
+## Confirmed and partially verified functions
 
 | Test | Result | Evidence / notes |
 |---|---|---|
