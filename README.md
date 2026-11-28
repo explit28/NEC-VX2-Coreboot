@@ -2,6 +2,12 @@
 
 This repository publishes the NEC VersaPro VX-2 board port and the generic CardBus resource fix currently under review in coreboot Gerrit. The Gerrit changes have **not** yet been merged into coreboot.
 
+## Coreboot and EDK2
+
+![NEC VersaPro VX-2 displaying the coreboot logo](docs/images/NEC_VersaPro_VX-2_Coreboot.jpg)
+
+![NEC VersaPro VX-2 EDK2 boot manager](docs/images/NEC_VersaPro_VX-2_Coreboot_Bootmanager.jpg)
+
 ## Hardware
 
 The tested system is a NEC VersaPro VX-2 (Compal LA-C423P) with an Intel Core i5-8250U, Intel UHD 620, Nuvoton NPCE388N EC, 16 MiB SPI flash, O2 Micro CardBus/PCMCIA controller (`1217:8134`) and O2 Micro SD reader (`1217:8621`).
@@ -10,15 +16,11 @@ The owner reports a complete hardware test of the 16 MiB reference ROM. The repo
 
 See [the hardware test matrix](docs/hardware-test-matrix.md) for the reported scope and known limits. Windows Intel UHD 620 Code 43 remains unresolved. Successful preboot GOP output does not establish working Windows graphics acceleration.
 
-## Photos
+### NVMe storage
 
-![NEC VersaPro VX-2 running coreboot](docs/images/NEC_VersaPro_VX-2_Coreboot.jpg)
+NVMe boot was verified with an M.2 2280 PCIe SSD in a direct-plug adapter in the 2.5-inch drive bay. The tested caddy is marked `AM1SS000100`.
 
-![Coreboot EDK2 boot manager](docs/images/NEC_VersaPro_VX-2_Coreboot_Bootmanager.jpg)
-
-![NVMe connector](docs/images/vx2-nvme-connector.jpg)
-
-![Installed NVMe SSD](docs/images/vx2-nvme-installed.jpg)
+![Direct-plug NVMe caddy installed in the VX-2 drive bay](docs/images/vx2-nvme-installed.jpg)
 
 ## Gerrit source
 
