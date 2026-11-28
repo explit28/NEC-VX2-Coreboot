@@ -1,5 +1,20 @@
 # Windows graphics compatibility — Intel UHD 620
 
+## Tested upstream review update — 2026-11-28
+
+The full NEC VX-2 notebook hardware test was reported completed on the cleaned-up upstream test ROM. The tester reports continued support for the dynamically enumerated SD reader, 32-bit CardBus, 16-bit PCMCIA, OEM GOP/EDK2 and previously supported hardware. Individual measurements, exact SD bus number and card models were not supplied for this run. Windows Intel UHD 620 Code 43 remains unresolved; previously open HDMI and other unverified tests are not reclassified.
+
+- [Gerrit #97774](https://review.coreboot.org/c/coreboot/+/97774): generic CardBus bridge window limit programming, commit `9acf4b12a5e9ee5f1b96c64e27deeb23a24f3b70`.
+- [Gerrit #97759](https://review.coreboot.org/c/coreboot/+/97759): updated NEC board port, commit `9430870094bdd7754ea89c05441d7b8c54db2621`, dependent on #97774.
+- Both uploads succeeded according to the Git push output. Review and new CI approval remain pending; the previous Jenkins Verified+1 was removed as outdated.
+- The generic CardBus fix programs base and inclusive limit registers for both memory and both I/O windows, closes invalid/unassigned windows, and retains Memory Window 0 prefetch. The board-local O2Micro initialization remains. Roda RK9's TI CardBus path is also affected but was not separately built or hardware-tested.
+- The SD reader uses dynamic PCI bus allocation; the OEM snapshot locates it behind 00:1d.3. Historical physical root-port mapping ambiguities remain; no fixed bus 08 workaround is retained.
+- Experimental IGD NVS, DSM/SWSCI, pre-FSP subsystem-ID override and NEC-specific common graphics debug code were removed from the upstream submission, not from the experimental development snapshot.
+
+Test ROM: 16,777,216 bytes, SHA-256 `5e66645f771b2eea21c8275990fc2287b6fc46f9ecb83a0a45d9564a5e0aed13`. Build report: coreboot 26.09, FSP 3.7.6.0, EDK2 `44b9aa144a5ff5ceb843245388fb00c87a06895f`. Tested source commits: CardBus `94fe8fa9504b97b0bebedbe0d20827d86e886526`, NEC `3e34346260337fd245533e47a40da18ffd45cf12`. Later NEC documentation-only change and commit-message corrections produced the submitted commits. The final message-only corrections preserved both tree hashes. Reported IFD/GbE/full ME match the notebook blobs; IFD/FMAP/CBFS validation and local lint/checkpatch passed. The ROM and build artifacts have not been independently inspected for this documentation update.
+
+The GitHub source/configuration snapshot remains the experimental development version, not a byte-for-byte copy of the tested upstream source. Use the Gerrit changes for the upstream code. No ROM or proprietary blobs are published by this update.
+
 Status: 2026-11-28. Open firmware compatibility issue; Linux graphics works, Windows native Intel graphics reports Device Manager Code 43 with the 2025 driver. The older NEC driver can cause VIDEO_TDR_FAILURE (0x116). Windows boot and GOP output are not evidence of working Windows acceleration.
 
 ## Hardware and test matrix
@@ -63,7 +78,7 @@ VBS/HVCI/hypervisor disabled test on an earlier build did not resolve Code 43; V
 **Unsuccessful Windows graphics fix.** The tester flashed and tested the TestMB image and reports the same Windows Code 43 as with the OEM GOP in EDK2. The build succeeded; this is a runtime failure, not a compilation failure.
 
 - Coreboot base: `0c42e2ee1fe1179bbb973765493842141b228686`; displayed version 26.09.
-- ROM: `NEC-VX2-IGD-FSP-GOP-TestMB.rom`, SHA256 `58570a7ab60a84a54345e181df76af770923cc8512267b38003135ee601090be` (verified against supplied ROM).
+- ROM: `NEC-VX2-IGD-FSP-GOP-TestMB.rom`, SHA256 `58570a7ab60a84a54345e181df76af770923cc8512267b38003135ee601090be` (reported by the build manifest).
 - RUN_FSP_GOP enabled, NO_GFX_INIT and EDK2 OEM GOP disabled. FSP-S receives the original NEC VBT; EDK2 GraphicsOutputDxe consumes the framebuffer handoff. LVGL retained.
 - DVMT128, OEM SID, OpRegion ACPI NVS and experimental DSM retained in configuration; SWSCI inactive. Kconfig expanded to allow FSP-GOP; EDK2 DSC/FDF keep Vx2PanelDxe outside the platform GOP conditional.
 - The generic framebuffer GOP does not provide EDID protocols in the inspected source path. Vx2PanelDxe may skip panel metadata; no runtime EDID/OpRegion dump was supplied for this test.
@@ -79,7 +94,7 @@ The native libgfxinit follow-up is documented below.
 - Native libgfxinit TestMB build: coreboot `0c42e2ee1fe1179bbb973765493842141b228686`, libgfxinit `7ac11bc0747628aec87d074643b54038aa08e1d4`, BIOS version 26.09. Both eDP and VGA output worked on the test board, but Windows still reported Code 43. The earlier AUX/EDID failure no longer prevented display output; the exact responsible upstream change is not established. OEM GOP, FSP-GOP and legacy VGA ROM execution were disabled. EDK2 used the native framebuffer; the generic GOP path lacks EDID protocols used by the panel DXE.
 - Full VX-2 notebook: native libgfxinit produced a Linux regression. The photographed i915 log repeatedly reports `flip_done timed out` and `commit wait timed out` for pipe A, plane 1A and eDP-1 after reaching graphical.target. The root cause is not established. Successful firmware display output is not evidence of a successful Linux graphics handoff.
 - HAP/ME experiment: the original TestMB firmware is `VX-2_testmb.rom`. The intended controlled comparison preserves the OEM BIOS, full ME and GbE and changes only the descriptor HAP bit. The tester reports that HAP has no effect on Code 43 and that graphics works normally on the original NEC BIOS with HAP disabled (bit clear). The precise outcomes for OEM HAP set and coreboot HAP clear were not separately stated, and no runtime ME status or final binary comparison was supplied. Therefore record the tester's negative conclusion without claiming a fully verified four-way A/B matrix or excluding every ME/coreboot interaction.
-- Decision: return to the stable OEM Intel GOP + original VBT in EDK2, with the existing consolidated upstream review [#97759](https://review.coreboot.org/c/coreboot/+/97759) as the source baseline. Do not promote the experimental FSP-GOP or libgfxinit configuration. Keep the experimental artifacts for diagnosis. The rollback is requested, not yet verified; no new Gerrit change is needed.
+- Decision: return to the stable OEM Intel GOP + original VBT in EDK2, with the existing consolidated upstream review [#97759](https://review.coreboot.org/c/coreboot/+/97759) as the source baseline. Do not promote the experimental FSP-GOP or libgfxinit configuration. Keep the experimental artifacts for diagnosis. The later upstream review ROM restored OEM GOP and removed experimental IGD code; see the tested upstream update above.
 - Windows Code 43 remains open. Prioritize OEM-versus-coreboot comparisons of ACPI/OpRegion, system-agent policy, PCI resources, interrupts and GPU state rather than repeating the three graphics initialization experiments.
 
 ## Open investigation
