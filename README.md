@@ -20,7 +20,7 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 
 | Hardware or function | Status | Verified result or open test |
 |---|---|---|
-| Intel graphics under Linux | ✅ Working | Intel UHD 620 with i915; SID-fix hardware test passed. |
+| Intel graphics under Linux | ✅ Working (OEM GOP) | Intel UHD 620, hardware-accelerated OpenGL 4.6; native libgfxinit caused i915 display timeouts on the complete notebook. |
 | Intel graphics under Windows | ❌ Error 43 | Intel 31.0.101.2140; NEC 2019 driver can cause VIDEO_TDR_FAILURE. See [Windows graphics investigation](docs/windows-graphics.md). |
 | Internal display and UEFI | ✅ Working | NEC GOP + VBT, graphical EDK II setup and UEFI Shell. |
 | External HDMI | ⚠️ Retest needed | No image with coreboot or with the original NEC BIOS on the test board. Linux detects the monitor and reads its EDID under coreboot. The HDMI port is on a daughterboard, and a poor connection is possible. Check the connector and retest with both firmware versions using the same monitor and cable. |
@@ -54,6 +54,8 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 |---|---|---|
 | Internal panel stayed black with libgfxinit | eDP AUX and external DDC probes failed to read EDID. Switched to the NEC OEM GOP and matching VBT through EDK II. | **Resolved for the internal display**. External VGA works. HDMI detects the monitor but shows no image. |
 | Windows Intel graphics Code 43 with OEM GOP | Tested alternative FSP-GOP initialization on TestMB with EDK2 framebuffer handoff. | **Unsuccessful**: Windows still reports Code 43. [Details](docs/windows-graphics.md#fsp-gop-experiment--2026-11-27). |
+| Native libgfxinit follow-up | Updated libgfxinit restored eDP and VGA on TestMB; complete notebook showed repeated i915 pipe A/eDP commit and flip timeouts. | **Not adopted**: Windows Code 43 unchanged; Linux regression. Return to OEM GOP reference. |
+| HAP/ME hypothesis | Tester reports no effect on Code 43; original NEC BIOS with HAP clear works normally. | No confirmed HAP-only explanation; individual A/B results and ME runtime state not fully recorded. [Details](docs/windows-graphics.md#native-libgfxinit-and-hap-follow-up--2026-11-28). |
 | Legacy Intel VGA ROM ran but produced no visible image | VBE modes `0x118` and `0x11b` lit the backlight without visible output. The same OEM GOP and VBT path provided the working display. | **Legacy path failed**. The GOP path showed the logo, graphical setup and UEFI Shell. |
 | USB boot was unreliable during bring-up | Tested again after adding the board's USB port configuration and PCIe bring-up changes. | **USB live boot confirmed**. USB devices worked on all five ports. |
 | Internal NVMe disappeared with trimmed Intel ME | Restored the full original ME. Tested first with HAP clear, then with HAP set and build-time ME cleaning disabled. | **NVMe boot confirmed with full ME and HAP set**. The earlier reboot loop has no confirmed root cause. |
