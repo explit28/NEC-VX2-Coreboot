@@ -10,6 +10,16 @@ The owner reports a complete hardware test of the 16 MiB reference ROM. The repo
 
 See [the hardware test matrix](docs/hardware-test-matrix.md) for the reported scope and known limits. Windows Intel UHD 620 Code 43 remains unresolved. Successful preboot GOP output does not establish working Windows graphics acceleration.
 
+## Photos
+
+![NEC VersaPro VX-2 running coreboot](docs/images/NEC_VersaPro_VX-2_Coreboot.jpg)
+
+![Coreboot EDK2 boot manager](docs/images/NEC_VersaPro_VX-2_Coreboot_Bootmanager.jpg)
+
+![NVMe connector](docs/images/vx2-nvme-connector.jpg)
+
+![Installed NVMe SSD](docs/images/vx2-nvme-installed.jpg)
+
 ## Gerrit source
 
 - Coreboot base: [`096fd34d9ca95a267802c25ce697498d41243378`](https://review.coreboot.org/plugins/gitiles/coreboot/+/096fd34d9ca95a267802c25ce697498d41243378/)
