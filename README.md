@@ -8,6 +8,21 @@ The VX-2 (Compal `LA-C423P`) shares much of its mainboard platform with the Thin
 
 > Experimental port submitted for [upstream coreboot review (#97759)](https://review.coreboot.org/c/coreboot/+/97759). Keep a verified backup of the original SPI flash and a known-recoverable external programmer setup. Do not flash another device's complete image. The bundled snapshot is not necessarily ready to flash without integrating its board-specific configuration and required OEM components.
 
+## Tested upstream review update — 2026-11-28
+
+The full NEC VX-2 notebook hardware test was reported completed on the cleaned-up upstream test ROM. The tester reports continued support for the dynamically enumerated SD reader, 32-bit CardBus, 16-bit PCMCIA, OEM GOP/EDK2 and previously supported hardware. Individual measurements, exact SD bus number and card models were not supplied for this run. Windows Intel UHD 620 Code 43 remains unresolved; previously open HDMI and other unverified tests are not reclassified.
+
+- [Gerrit #97774](https://review.coreboot.org/c/coreboot/+/97774): generic CardBus bridge window limit programming, commit `9acf4b12a5e9ee5f1b96c64e27deeb23a24f3b70`.
+- [Gerrit #97759](https://review.coreboot.org/c/coreboot/+/97759): updated NEC board port, commit `9430870094bdd7754ea89c05441d7b8c54db2621`, dependent on #97774.
+- Both uploads succeeded according to the Git push output. Review and new CI approval remain pending; the previous Jenkins Verified+1 was removed as outdated.
+- The generic CardBus fix programs base and inclusive limit registers for both memory and both I/O windows, closes invalid/unassigned windows, and retains Memory Window 0 prefetch. The board-local O2Micro initialization remains. Roda RK9's TI CardBus path is also affected but was not separately built or hardware-tested.
+- The SD reader uses dynamic PCI bus allocation; the OEM snapshot locates it behind 00:1d.3. Historical physical root-port mapping ambiguities remain; no fixed bus 08 workaround is retained.
+- Experimental IGD NVS, DSM/SWSCI, pre-FSP subsystem-ID override and NEC-specific common graphics debug code were removed from the upstream submission, not from the experimental development snapshot.
+
+Test ROM: 16,777,216 bytes, SHA-256 `5e66645f771b2eea21c8275990fc2287b6fc46f9ecb83a0a45d9564a5e0aed13`. Build report: coreboot 26.09, FSP 3.7.6.0, EDK2 `44b9aa144a5ff5ceb843245388fb00c87a06895f`. Tested source commits: CardBus `94fe8fa9504b97b0bebedbe0d20827d86e886526`, NEC `3e34346260337fd245533e47a40da18ffd45cf12`. Later NEC documentation-only change and commit-message corrections produced the submitted commits. The final message-only corrections preserved both tree hashes. Reported IFD/GbE/full ME match the notebook blobs; IFD/FMAP/CBFS validation and local lint/checkpatch passed. The ROM and build artifacts have not been independently inspected for this documentation update.
+
+The GitHub source/configuration snapshot remains the experimental development version, not a byte-for-byte copy of the tested upstream source. Use the Gerrit changes for the upstream code. No ROM or proprietary blobs are published by this update.
+
 ## Screenshots
 
 ![NEC VersaPro VX-2 displaying the coreboot logo](docs/images/NEC_VersaPro_VX-2_Coreboot.jpg)
@@ -31,7 +46,7 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 | Internal NVMe and Secure Boot | ✅ Working | Ubuntu booted from NVMe with Secure Boot enabled. |
 | Windows 11 with Secure Boot | ✅ Working | Previously verified Windows 11 boot with Secure Boot enabled; native Intel graphics remains broken (Code 43). |
 | Secure Boot persistence | ✅ Working | Secure Boot settings persist across restarts. |
-| SD reader | ✅ Linux: Working<br>✅ Windows: Working | The SD write test passed under Linux. An SD card was readable under Windows with the test build that places the reader on PCI bus `08`. |
+| SD reader | ✅ Linux: Working<br>✅ Windows: Working | The SD write test passed under Linux. An SD card was readable under Windows on the earlier bus-08 build; the cleaned upstream ROM was subsequently tested with dynamic bus allocation. |
 | Internal WLAN | ✅ Working | Tested with a retrofitted Intel AX200. The VX-2 typically shipped with an Intel 8xxx-series WLAN card. |
 | Internal WLAN after resume | ✅ Working | WLAN works after resuming from suspend with the retrofitted Intel AX200. |
 | SATA, mSATA and SATA optical drive | ✅ Working | The tester confirmed operation on the VX-2. |
@@ -148,7 +163,7 @@ The working VBT had SHA-256 `407ceb6c1a3eafafc9aa441207bc23d69728465ebc046997d30
 
 **Do not publish OEM binaries, full SPI dumps, ME/BIOS regions or device-specific NVRAM unless you have verified redistribution rights and removed confidential/device-specific data.** This repository is configured to exclude them by default. See [OEM asset instructions](docs/oem-assets.md).
 
-## Combined V2 and IGD subsystem ID
+## Experimental development: Combined V2 and IGD subsystem ID
 
 Combined V2 boots on the NEC VX-2 with 128 MiB DVMT preallocation, an 8 MiB
 GGTT and a 256 MiB graphics aperture. Its OEM GOP and VBT are paired with
