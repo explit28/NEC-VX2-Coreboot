@@ -108,3 +108,12 @@ were still running after passing the lowercase check:
 [97744](https://qa.coreboot.org/job/coreboot-gerrit/310213/),
 [97745](https://qa.coreboot.org/job/coreboot-gerrit/310214/), and
 [97746](https://qa.coreboot.org/job/coreboot-gerrit/310215/).
+## Final upstream ROM hardware test — 2026-11-28
+
+- User reports complete hardware validation of the final upstream ROM. SHA-256: `5e66645f771b2eea21c8275990fc2287b6fc46f9ecb83a0a45d9564a5e0aed13`; size 16 MiB. The binary itself is not published.
+- Coreboot series: base `096fd34d9ca95a267802c25ce697498d41243378`; CardBus `94fe8fa9504b97b0bebedbe0d20827d86e886526`, Change-ID `I9a9247b7294720b599f0af9e9f421c1186163093`; NEC port `7ff147979f5e2e7b4d9245e8553f37a596d260ae`, Change-ID `Ic47966b6d08122709f3d73ad5c3634956e62dcc8`, existing Gerrit change [#97759](https://review.coreboot.org/c/coreboot/+/97759).
+- Coreboot release string: `26.09`. EDK2 MrChromebox revision: `44b9aa144a5ff5ceb843245388fb00c87a06895f`; `edk2-platforms`: `4db2845d14425599238be86b8a73d288f7c0b4a6`; Kaby Lake FSP: `3.7.6.0`.
+- OEM GOP and matching VBT, full notebook ME, GbE and descriptor were used locally. None of these proprietary binary inputs, nor the complete ROM, are included here.
+- The final test specifically covered SD with dynamic bus allocation, generic CardBus window handling, 32-bit CardBus, 16-bit PCMCIA, OEM GOP/EDK2 and previously supported hardware. Exact bus number, card models and per-port measurements were not supplied.
+- Windows Intel UHD 620 Code 43 remains a known limitation. Roda RK9 was not separately built or tested.
+- Source changes are tracked by the [generic CardBus Gerrit change](https://review.coreboot.org/q/I9a9247b7294720b599f0af9e9f421c1186163093) and the existing [NEC mainboard change #97759](https://review.coreboot.org/c/coreboot/+/97759).

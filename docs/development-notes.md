@@ -1,3 +1,11 @@
+## Final upstream hardware test — 2026-11-28
+
+The user reports completing the full hardware test of the final upstream ROM (SHA-256 `5e66645f771b2eea21c8275990fc2287b6fc46f9ecb83a0a45d9564a5e0aed13`). The tested series is Coreboot base `096fd34d9ca95a267802c25ce697498d41243378`, generic CardBus `94fe8fa9504b97b0bebedbe0d20827d86e886526`, and NEC board port `7ff147979f5e2e7b4d9245e8553f37a596d260ae`.
+
+The reported test covered OEM GOP/VBT with EDK2, the SD reader using dynamic PCI bus assignment, generic CardBus window programming, 32-bit CardBus, 16-bit PCMCIA, and previously supported notebook hardware. The exact SD bus number, per-port observations, card models, and register measurements were not supplied. Windows Intel UHD 620 Code 43 remains unresolved. No new graphics investigation was performed in this update.
+
+Upstream and experiment remain separate: `nec-vx2-upstream-review` contains the clean review series; `nec-vx2-development-backup` retains the earlier experimental IGD work. The GitHub source tree preserves that development history and adds source-only upstream patch files. No full ROM or proprietary firmware blobs are published. Roda RK9 was not separately built or tested.
+
 # Development notes — NEC VersaPro VX-2
 
 ## Graphics experiments (2026-11-22)

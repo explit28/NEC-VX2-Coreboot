@@ -1,6 +1,23 @@
 # Test matrix
 
-## Confirmed and partially verified functions
+## Final upstream ROM — hardware test complete (2026-11-28)
+
+The user reports the full hardware test completed with the 16 MiB ROM whose SHA-256 is `5e66645f771b2eea21c8275990fc2287b6fc46f9ecb83a0a45d9564a5e0aed13`. This is an attestation of the overall test, not a per-port data log.
+
+| Area | Final-image status reported | Detail available |
+|---|---|---|
+| OEM GOP/VBT and EDK2 | Tested | No individual resolution or payload-console transcript supplied. |
+| SD reader `1217:8621` | Tested with dynamic PCI bus assignment | Exact bus number and observed upstream BDF not supplied. No fixed `0x08` requirement. |
+| Generic CardBus windows | Tested | Generic base/limit programming was in the tested source; no register dump or window sizes supplied. |
+| 32-bit CardBus | Tested | No final-image card model or transfer measurements supplied. |
+| 16-bit PCMCIA | Tested | No final-image card model or transfer measurements supplied. |
+| Previously supported board hardware | Included in the completed test | Per-device and per-port outcomes were not separately transcribed. |
+| Windows Intel UHD 620 acceleration | Known limitation remains | Windows still reports Code 43. |
+| Roda RK9 | Not tested | The generic commit updates its TI driver to call the shared setter, but no Roda build or hardware test was run. |
+
+The final firmware was built as Coreboot `26.09` with OEM GOP/VBT and EDK2. Proprietary binaries and the complete ROM are not part of this repository. Earlier detailed rows below remain historical results from their documented development builds unless explicitly identified as final-upstream coverage.
+
+## Historical and development-build test observations
 
 | Test | Result | Evidence / notes |
 |---|---|---|
@@ -17,7 +34,7 @@
 | UEFI Secure Boot and Ubuntu NVMe boot | ✅ Working | `mokutil --sb-state` reported enabled. The kernel confirmed EFI Secure Boot lockdown. Ubuntu booted via `shimx64.efi` with `/` on `nvme0n1p2`. |
 | Windows 11 with Secure Boot | ✅ Working | Previously verified Windows 11 boot with Secure Boot enabled; this is not a native graphics acceleration test. |
 | Secure Boot persistence | ✅ Working | Secure Boot settings persist across restarts. |
-| SD card | ✅ Linux: Working<br>✅ Windows: Working | The SD write test passed under Linux. An SD card was readable under Windows with the test build that places the reader on PCI bus `08`. |
+| SD card (early development build) | ✅ Linux: Working<br>✅ Windows: Working | The earlier development test used a fixed bus-08 workaround. The final upstream ROM was tested with dynamic assignment; its exact bus number was not reported. |
 | 32-bit CardBus | ✅ Linux: Working<br>✅ Windows: Working | FireWire and USB 2.0 CardBus cards tested. Data transfer succeeded on both operating systems. |
 | 16-bit PCMCIA | ✅ Linux: Working<br>✅ Windows: Working | A 16-bit PCMCIA card reader was tested successfully, including data transfer, on both operating systems. |
 | SATA | ✅ Working | Confirmed on the VX-2 by the tester. |
@@ -45,13 +62,13 @@
 | Native libgfxinit (complete notebook) | ❌ Linux regression | Repeated i915 flip_done and commit wait timeouts on pipe A/eDP-1. |
 | HAP/ME experiment | No effect reported | OEM NEC BIOS with HAP clear works; complete A/B matrix and runtime ME state not independently established. [Details](windows-graphics.md#native-libgfxinit-and-hap-follow-up--2026-11-28). |
 | External HDMI | ⚠️ Retest needed | No image with coreboot or with the original NEC BIOS on the test board. Linux detects the monitor and reads its EDID under coreboot. The HDMI port is on a daughterboard, and a poor connection is possible. Check the connector and retest with both firmware versions using the same monitor and cable. |
-| 64 MiB CardBus prefetchable window | ⚠️ Linux allocation warning | Also occurs with the original NEC BIOS. Smaller windows allowed the tested card to initialize. Likely non-blocking for tested use. |
+| 64 MiB CardBus prefetchable window (earlier build) | ⚠️ Historical Linux allocation warning | Also observed with original NEC firmware. No separate final-ROM measurement was supplied. |
 
 See the [development problem table](../README.md#development-problems-and-resolutions) for the failed graphics approaches and the changes that restored functionality.
 
 ## HDMI GPIO test, 2026-11-24
 
-The OEM GPIO snapshot reports GPP_E12 and GPP_E15 as output-high pads (DW0 `0x84000201`), whereas the running coreboot dump showed `0x44000300` for both. A test build configured both with `PAD_CFG_GPO(..., 1, PLTRST)`. The first review-checkout image displayed the TianoCore logo and hung on startup; it was not a valid HDMI test. A subsequent test using the original working development checkout booted, but HDMI still produced no image. The two pad changes did not resolve the issue; their electrical purpose remains unknown. Reverting these experimental changes is recommended. A later test with the original NEC BIOS on the test board also produced no HDMI image. Check the daughterboard connection, then retest both firmware versions with the same monitor and cable.
+These notes describe earlier development-build tests; no new final-ROM HDMI pin measurement was supplied. The OEM GPIO snapshot reports GPP_E12 and GPP_E15 as output-high pads (DW0 `0x84000201`), whereas the running coreboot dump showed `0x44000300` for both. A test build configured both with `PAD_CFG_GPO(..., 1, PLTRST)`. The first review-checkout image displayed the TianoCore logo and hung on startup; it was not a valid HDMI test. A subsequent test using the original working development checkout booted, but HDMI still produced no image. The two pad changes did not resolve the issue; their electrical purpose remains unknown. Reverting these experimental changes is recommended. A later test with the original NEC BIOS on the test board also produced no HDMI image. Check the daughterboard connection, then retest both firmware versions with the same monitor and cable.
 
 ## NVMe and Intel ME, 2026-11-22
 
@@ -71,9 +88,9 @@ The tester confirmed that internal WLAN works with the retrofitted AX200 after f
 
 The tested notebook has no exposed camera; the display bezel covers the possible camera position. Whether a connector is fitted remains unverified. The Intel Imaging Unit (`8086:1919`, `00:05.0`) appears as an unknown multimedia controller under Windows and is absent from the OEM PCI inventory. The next build should disable the unused imaging unit; the Skylake chipset tree already defaults `imgu` to off and the FSP-S code derives `SaImguEnable` from that device state. Verify the effective state and PCI enumeration before claiming a fix.
 
-An earlier subsystem-ID-only experiment for CardBus and SD did not resolve Windows Code 31. The complete CardBus register sequence reproduced from the OEM firmware resolved Code 31 on the later test build. The SD reader uses the separate PCI bus `08` fix.
+An earlier subsystem-ID-only experiment for CardBus and SD did not resolve Windows Code 31. The complete CardBus register sequence reproduced from the OEM firmware resolved Code 31 on the later test build. The early development build used a fixed PCI bus `08` workaround. That workaround is absent from the final upstream port, which was hardware-tested with dynamic bus assignment.
 
-## 🟡 Remaining firmware tests
+## Historical detailed-test gaps from development builds
 
 - The Secure Boot build uses `SMMSTORE=y` and `EDK2_SECURE_BOOT_SUPPORT=y`, with enforcement off by default in the reference configuration. The ROM has a 512 KiB `SMMSTORE` region at `0x810000`, and its descriptor reports HAP set. The Ubuntu test boot confirmed enforcement.
 - Test actual FireWire I/O separately.

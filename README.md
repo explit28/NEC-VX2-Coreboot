@@ -6,7 +6,7 @@ The NEC VersaPro VX-2 tested for this port was built in 2019 in a configuration 
 
 The VX-2 (Compal `LA-C423P`) shares much of its mainboard platform with the ThinkPad L560 (`LA-C421P`) and L570 (`LA-C422P`). Each model uses a distinct PCB. The L560 uses DDR3L, while the L570 and VX-2 use DDR4. A coreboot port for either ThinkPad needs its own hardware validation. See [the platform comparison](#porting-reference-for-thinkpad-l570-and-l560) below.
 
-> Experimental port submitted for [upstream coreboot review (#97759)](https://review.coreboot.org/c/coreboot/+/97759). Keep a verified backup of the original SPI flash and a known-recoverable external programmer setup. Do not flash another device's complete image. The bundled snapshot is not necessarily ready to flash without integrating its board-specific configuration and required OEM components.
+> This repository preserves the experimental NEC VX-2 development work. The cleaned upstream port is maintained as a separate Coreboot change series; its final hardware test is summarized below. The GitHub tree is not a flash image. Keep the experimental source and the upstream port distinct, and do not flash another device's complete image.
 
 ## Screenshots
 
@@ -14,7 +14,26 @@ The VX-2 (Compal `LA-C423P`) shares much of its mainboard platform with the Thin
 
 ![NEC VersaPro VX-2 EDK2 boot manager](docs/images/NEC_VersaPro_VX-2_Coreboot_Bootmanager.jpg)
 
+## Final upstream hardware test — 2026-11-28
+
+The user reports completion of the full hardware test using the final 16 MiB upstream ROM (SHA-256 `5e66645f771b2eea21c8275990fc2287b6fc46f9ecb83a0a45d9564a5e0aed13`). The ROM itself and all proprietary firmware components remain local and are not published here.
+
+The reported final-image test covered the OEM Intel GOP/VBT with the EDK2 payload; the SD reader with dynamic PCI bus assignment; the generic CardBus window path; 32-bit CardBus and 16-bit PCMCIA support; and the notebook's previously supported hardware. The actual SD bus number, per-port measurements, and individual device/card models were not supplied, so this repository does not claim them. The earlier development-only bus-08 override is not part of the upstream port.
+
+The Intel UHD 620 Windows acceleration issue remains: Windows reports Code 43. The full test did not resolve that known limitation. The NEC 2019 graphics driver has historically caused `VIDEO_TDR_FAILURE`. No new Code 43 analysis is included in this update.
+
+The source series is Coreboot base `096fd34d9ca95a267802c25ce697498d41243378`, generic CardBus fix `94fe8fa9504b97b0bebedbe0d20827d86e886526`, and NEC port `7ff147979f5e2e7b4d9245e8553f37a596d260ae`. The mainboard patch is the existing [Gerrit change #97759](https://review.coreboot.org/c/coreboot/+/97759), Change-ID `Ic47966b6d08122709f3d73ad5c3634956e62dcc8`. The CardBus change uses Change-ID `I9a9247b7294720b599f0af9e9f421c1186163093` ([Gerrit search](https://review.coreboot.org/q/I9a9247b7294720b599f0af9e9f421c1186163093)).
+
+The CardBus fix programs both base and inclusive limit registers for the two memory and two I/O windows, uses Coreboot resource allocation, validates 32-bit ranges/alignment, closes unused/invalid windows, and keeps Memory Window 0 prefetch. It contains no NEC or controller-ID special case. The SD reader remains on dynamic Coreboot bus assignment.
+
+Build provenance: Coreboot version `26.09`; EDK2 MrChromebox revision `44b9aa144a5ff5ceb843245388fb00c87a06895f`; `edk2-platforms` revision `4db2845d14425599238be86b8a73d288f7c0b4a6`; Kaby Lake FSP `3.7.6.0`. See [build provenance](docs/build-provenance.md), the [test matrix](docs/test-matrix.md), and the [Windows graphics record](docs/windows-graphics.md). The Roda RK9 TI CardBus-driver adjustment is source-only: Roda RK9 was not separately built or tested.
+
+The experimental IGD work and its historical findings remain in this repository. The cleaned upstream source series does not replace or overwrite those experiments. The source changes are represented by the separate [generic CardBus Gerrit change](https://review.coreboot.org/q/I9a9247b7294720b599f0af9e9f421c1186163093) and [NEC mainboard Gerrit change #97759](https://review.coreboot.org/c/coreboot/+/97759). No ROM or proprietary blobs are included.
+
 ## Hardware test status
+
+The final-upstream summary above records the latest user-reported test. Fine-grained device observations in the table below preserve earlier development-build history unless a row explicitly says “Final upstream ROM”; they are not new per-device measurements from the final run.
+
 
 The results below cover the tested coreboot 26.09 builds on the VX-2. See the [test matrix](docs/test-matrix.md) for the hardware and firmware details of each result.
 
@@ -31,13 +50,13 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 | Internal NVMe and Secure Boot | ✅ Working | Ubuntu booted from NVMe with Secure Boot enabled. |
 | Windows 11 with Secure Boot | ✅ Working | Previously verified Windows 11 boot with Secure Boot enabled; native Intel graphics remains broken (Code 43). |
 | Secure Boot persistence | ✅ Working | Secure Boot settings persist across restarts. |
-| SD reader | ✅ Linux: Working<br>✅ Windows: Working | The SD write test passed under Linux. An SD card was readable under Windows with the test build that places the reader on PCI bus `08`. |
+| SD reader | ✅ Final upstream ROM: tested with dynamic PCI bus assignment | The actual bus number was not supplied. The earlier fixed-bus-08 workaround is development history only; it is absent from the upstream port. |
 | Internal WLAN | ✅ Working | Tested with a retrofitted Intel AX200. The VX-2 typically shipped with an Intel 8xxx-series WLAN card. |
 | Internal WLAN after resume | ✅ Working | WLAN works after resuming from suspend with the retrofitted Intel AX200. |
 | SATA, mSATA and SATA optical drive | ✅ Working | The tester confirmed operation on the VX-2. |
-| 32-bit CardBus | ✅ Linux: Working<br>✅ Windows: Working | FireWire and USB 2.0 CardBus cards tested. Data transfer succeeded on both operating systems. |
-| 16-bit PCMCIA | ✅ Linux: Working<br>✅ Windows: Working | A 16-bit PCMCIA card reader was tested successfully, including data transfer, on both operating systems. |
-| 64 MiB CardBus prefetchable window | ⚠️ Linux allocation warning | Also occurs with the original NEC BIOS. Smaller windows allowed the tested card to initialize. Likely non-blocking for tested use. |
+| 32-bit CardBus | ✅ Final upstream ROM: tested | Earlier development builds tested FireWire and USB 2.0 cards under Linux and Windows. The final test confirmed CardBus support; card models and per-OS details were not supplied. |
+| 16-bit PCMCIA | ✅ Final upstream ROM: tested | Earlier development builds recorded Linux/Windows data-transfer tests. The final test confirmed support; the user did not supply a final card model or per-OS transcript. |
+| 64 MiB CardBus prefetchable window (historical development build) | ⚠️ Earlier Linux allocation warning | The warning was also observed with original NEC firmware. The final upstream test did not provide a separate register dump or this specific warning status. |
 | Sound | ✅ Working | The tester confirmed audio playback. |
 | Bluetooth | ✅ Working | Bluetooth functionality confirmed on the VX-2. |
 | RJ45 Ethernet | ✅ Working | Wired Ethernet functionality confirmed on the VX-2. |
@@ -63,7 +82,7 @@ The results below cover the tested coreboot 26.09 builds on the VX-2. See the [t
 | Internal WLAN reported a hardware RF-kill block | The OEM GPD9 pad setting alone left the block in place. The fix opens the LPC MMIO window and sets the OEM EC `DCWL` bit during ACPI initialization. | **Internal WLAN confirmed working** with the retrofitted AX200. |
 | CardBus prefetchable window allocation failed | The same Linux warning occurs with the original NEC BIOS. | Data-transfer tests passed with the tested cards. |
 | Windows reported Code 31 (`STATUS_DEVICE_DATA_ERROR`) for the CardBus bridge | Matched the OEM root-port function and CardBus window order, then tested the OEM-derived register writes in the UEFI Shell. A partial sequence removed the `1217:8150` companion function from Windows while Code 31 persisted. The complete sequence for `1217:8134` was then added late in coreboot ramstage. | **Resolved**. FireWire and USB 2.0 CardBus cards and a 16-bit PCMCIA card reader passed data-transfer tests under Linux and Windows. |
-| Windows could not use the internal SD reader during bring-up | Preserved the OEM bus assignment by moving Root Port #12's secondary bus from `07` to `08` when needed. | **Resolved on the tested build**. An SD card was readable under Windows. |
+| Windows could not use the internal SD reader during early bring-up | An experimental build temporarily preserved OEM bus `08`. That fixed assignment was removed from the upstream port. | **Final upstream ROM tested with dynamic Coreboot bus assignment**; the observed bus number was not supplied. |
 | HDMI detects the monitor but produces no image | Linux read EDID under coreboot. The test board also produced no HDMI image with the original NEC BIOS. HDMI is on a daughterboard, and its connector still needs inspection. | **Open**. Retest both firmware versions after checking the daughterboard connection. |
 | Windows still listed an Intel multimedia controller (`8086:1919`) | The current board devicetree sets `imgu` to `off`. | **Open**. Whether `8086:1919` still enumerates with the latest firmware has not been verified. |
 | TPM 2.0 devices were absent in Linux | Added the coreboot LPC TPM driver node. | **Linux detection restored** via `tpm_tis`. |
@@ -115,6 +134,9 @@ The schematic indexes for [L570 LA-C422P](https://awesomeheader.com/model/lenovo
 Lenovo references: [ThinkPad L570 platform specifications](https://psref.lenovo.com/syspool/Sys/PDF/ThinkPad/ThinkPad_L570/ThinkPad_L570_Spec.PDF), [ThinkPad L570 model configurations](https://psref.lenovo.com/Product/ThinkPad_L570), [ThinkPad L560 platform specifications](https://psref.lenovo.com/syspool/Sys/PDF/ThinkPad/ThinkPad_L560/ThinkPad_L560_Spec.PDF).
 
 ## Build configuration
+
+The final upstream test used Coreboot 26.09, the generic CardBus window fix and dynamic PCI enumeration for the SD reader. Its local ROM checksum and immutable source revisions are recorded in [build provenance](docs/build-provenance.md). The complete ROM and OEM flash blobs are intentionally not distributed. The configuration details below describe the preserved experimental OEM-GOP reference unless explicitly identified as upstream.
+
 
 The reference configuration enables LVGL and uses the original 16 MiB SPI layout with an 8 MiB BIOS region. It incorporates the verified HAP descriptor path, full ME input, SMMSTORE, and EDK II Secure Boot support. Secure Boot starts disabled by default and can be enabled in setup. The reference uses the current local development checkout’s configuration. The previous reference came from a known-good ROM captured on 2026-11-24. See [build provenance](docs/build-provenance.md). The reference disables persistent SPI console logging and keeps CBMEM logging and SMMSTORE enabled.
 

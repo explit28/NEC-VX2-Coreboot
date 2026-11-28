@@ -27,7 +27,7 @@ Safe Mode works. The external monitor exhibited the same Windows failure; this i
 - OEM compatibility V1/V2 added board-scoped graphics AML and CBMEM-backed graphics state, partial DSM functions, guarded SWSCI-related methods. V2 full build tested: Code 43 unchanged. SWSCI is deliberately not activated.
 - Combined V1 retained DVMT128, experimental integer DSM return and brightness valid-bit changes. Combined V2 superseded its brightness implementation with Post-GOP DXE, added ACPI NVS reservation, live EDID handoff, panel brightness curve, EC lid state and additional guarded DSM support. See [build instructions](combined-v2-build.md). Code 43 persisted.
 - Combined V2 normal PCI subsystem programming corrected SVID only. FSP-M analysis identified the early SID latch; guarded board-local 16-bit SID write before FSP-M corrected it without writing SVID prematurely. See [SID analysis](igd-ssid.md).
-- Retain all current source changes for further diagnostics, but classify SID-fix as experimental, not a Windows graphics fix. No flash, ME/IFD modification or Gerrit push is needed for this documentation update.
+- Retain the SID-fix and related graphics changes as experimental, not as a Windows graphics fix. This historical record does not imply any firmware, ME or IFD binary publication.
 
 ## Post-GOP EFI diagnostic results
 
@@ -96,3 +96,6 @@ Success requires native Windows Intel driver starts without Code 43 or TDR, acce
 ## Provenance and privacy
 
 Reference local coreboot commits d072b8f075a5935015313c45b74cc1f67fed79b0 (Combined V2), 3a8c0b4108fbc274dca7fc53fecd84b679b0ecfd (SID fix), EDK2 44b9aa144a5ff5ceb843245388fb00c87a06895f, as reported by the build manifest. SID-fix ROM SHA256 201e121bce150176cd943e5b92d47a5f2eb344be58c95e69cff3abd2e8b903d4 (manifest value). Local artifacts remain under NEC-VX2-Testbuild within the existing coreboot checkout. Publish sanitized findings only, not Windows dumps, registry hives, OEM binary assets, device identifiers beyond hardware IDs, or raw private logs.
+## Final upstream ROM retest — 2026-11-28
+
+The user reports a complete hardware test of the final upstream ROM (SHA-256 `5e66645f771b2eea21c8275990fc2287b6fc46f9ecb83a0a45d9564a5e0aed13`). Windows Intel UHD 620 Code 43 remains a known limitation. The report did not include a new driver-version A/B, diagnostic dump, register snapshot or root-cause finding. No new Code 43 analysis was performed for this retest. The final ROM's OEM GOP/EDK2 preboot path was tested; preboot graphics success is separate from Windows 3D acceleration. See [final test provenance](build-provenance.md#final-upstream-rom-hardware-test--2026-11-28).
