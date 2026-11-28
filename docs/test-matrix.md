@@ -8,7 +8,7 @@
 | OEM Intel GOP + VBT graphical output | ✅ Working | Visible coreboot logo in EDK2 |
 | EDK2 UEFI Shell | ✅ Working | Shell appeared after splash |
 | EDK2 graphical setup (LVGL + NEC OEM GOP) | ✅ Working | Graphical Firmware Setup photographed on the test board |
-| Intel graphics under Linux | ✅ Working | Intel UHD 620 with i915; confirmed on SID-fix firmware. |
+| Intel graphics under Linux | ✅ Working (OEM GOP) | Intel UHD 620 with i915; OpenGL 4.6 hardware acceleration confirmed. |
 | USB boot into Ubuntu Live | ✅ Working | Booted a USB stick after the USB and PCIe bring-up changes. |
 | USB 2.0 | ✅ Working | USB devices worked on all five physical ports. |
 | USB SuperSpeed | ✅ Working | SuperSpeed operation confirmed on the VX-2. |
@@ -41,6 +41,9 @@
 |---|---|---|
 | Intel graphics under Windows | ❌ Error 43 | Intel 31.0.101.2140 on SID-fix; NEC 2019 driver causes VIDEO_TDR_FAILURE. [Investigation and test history](windows-graphics.md). |
 | FSP-GOP alternative (TestMB) | ❌ Code 43 persists | Build successful; tester reports unchanged Windows failure. [Details](windows-graphics.md#fsp-gop-experiment--2026-11-27). |
+| Native libgfxinit (TestMB) | Partial success | eDP and VGA work; Windows Code 43 persists. |
+| Native libgfxinit (complete notebook) | ❌ Linux regression | Repeated i915 flip_done and commit wait timeouts on pipe A/eDP-1. |
+| HAP/ME experiment | No effect reported | OEM NEC BIOS with HAP clear works; complete A/B matrix and runtime ME state not independently established. [Details](windows-graphics.md#native-libgfxinit-and-hap-follow-up--2026-11-28). |
 | External HDMI | ⚠️ Retest needed | No image with coreboot or with the original NEC BIOS on the test board. Linux detects the monitor and reads its EDID under coreboot. The HDMI port is on a daughterboard, and a poor connection is possible. Check the connector and retest with both firmware versions using the same monitor and cable. |
 | 64 MiB CardBus prefetchable window | ⚠️ Linux allocation warning | Also occurs with the original NEC BIOS. Smaller windows allowed the tested card to initialize. Likely non-blocking for tested use. |
 
