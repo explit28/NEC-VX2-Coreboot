@@ -12,6 +12,14 @@
 
 Linux Intel graphics works with the hardware-verified SID correction. Windows reports Code 43 with Intel 31.0.101.2140 and VIDEO_TDR_FAILURE with the NEC 2019 driver. The [dedicated Windows graphics investigation](windows-graphics.md) records the firmware changes, diagnostic readings, driver A/B tests and open issues.
 
+## Native libgfxinit and HAP follow-up — 2026-11-28
+
+- Native libgfxinit TestMB build: coreboot `0c42e2ee1fe1179bbb973765493842141b228686`, libgfxinit `7ac11bc0747628aec87d074643b54038aa08e1d4`, BIOS version 26.09. Both eDP and VGA output worked on the test board, but Windows still reported Code 43. The earlier AUX/EDID failure no longer prevented display output; the exact responsible upstream change is not established. OEM GOP, FSP-GOP and legacy VGA ROM execution were disabled. EDK2 used the native framebuffer; the generic GOP path lacks EDID protocols used by the panel DXE.
+- Full VX-2 notebook: native libgfxinit produced a Linux regression. The photographed i915 log repeatedly reports `flip_done timed out` and `commit wait timed out` for pipe A, plane 1A and eDP-1 after reaching graphical.target. The root cause is not established. Successful firmware display output is not evidence of a successful Linux graphics handoff.
+- HAP/ME experiment: the original TestMB firmware is `VX-2_testmb.rom`. The intended controlled comparison preserves the OEM BIOS, full ME and GbE and changes only the descriptor HAP bit. The tester reports that HAP has no effect on Code 43 and that graphics works normally on the original NEC BIOS with HAP disabled (bit clear). The precise outcomes for OEM HAP set and coreboot HAP clear were not separately stated, and no runtime ME status or final binary comparison was supplied. Therefore record the tester's negative conclusion without claiming a fully verified four-way A/B matrix or excluding every ME/coreboot interaction.
+- Decision: return to the stable OEM Intel GOP + original VBT in EDK2, with the existing consolidated upstream review [#97759](https://review.coreboot.org/c/coreboot/+/97759) as the source baseline. Do not promote the experimental FSP-GOP or libgfxinit configuration. Keep the experimental artifacts for diagnosis. The rollback is requested, not yet verified; no new Gerrit change is needed.
+- Windows Code 43 remains open. Prioritize OEM-versus-coreboot comparisons of ACPI/OpRegion, system-agent policy, PCI resources, interrupts and GPU state rather than repeating the three graphics initialization experiments.
+
 ## Secure Boot follow-up
 
 The later 16 MiB build combined the full test-board ME and HAP descriptor with SMMSTORE and MrChromebox EDK II Secure Boot support. Its ROM layout reported a 512 KiB SMMSTORE region at `0x810000`. Ubuntu booted from NVMe through `shimx64.efi` with Secure Boot enabled and kernel lockdown active. The earlier graphics test was performed without an SSD. See the [test matrix](test-matrix.md) for current results.
